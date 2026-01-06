@@ -23,20 +23,16 @@ function getApiBaseUrl() {
 
     // Auto-detect environment
     const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
 
-    // Local development environments
+    // Local development environments (HTTP server on localhost)
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:8000';
     }
 
-    // GitHub Pages or custom domain (production)
-    // TODO: Update this URL when you deploy your backend to production
-    // For now, even in production, we'll try to connect to localhost
-    // You should replace this with your actual production API URL
-    return 'http://localhost:8000';
-
-    // Example for production:
-    // return 'https://your-api-domain.com';
+    // File protocol (opening HTML directly) or Production
+    // Both use the cloud-hosted API
+    return 'https://backend-drab-alpha-85.vercel.app';
 }
 
 // Initialize API Base URL

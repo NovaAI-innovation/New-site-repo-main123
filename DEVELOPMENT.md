@@ -2,14 +2,40 @@
 
 This guide explains how to run the website locally to see the gallery images and test changes.
 
-## Prerequisites
+## Quick Start - Opening as a File (NEW!)
 
-- Python 3.7+ (for running the backend)
+**Good news!** With the cloud-hosted API, you can now **open gallery.html directly** without running any servers!
+
+Simply double-click `gallery.html` or any HTML file and it will fetch images from the production API at:
+`https://backend-drab-alpha-85.vercel.app`
+
+This works because:
+- The API is cloud-hosted and publicly accessible
+- CORS is configured to allow file:// protocol (null origin)
+- The configuration auto-detects and uses the production URL
+
+## Prerequisites for Local Development
+
+- Python 3.7+ (optional, only if testing with local backend)
 - A web browser (Chrome, Firefox, Edge, etc.)
 
-## Running in Development Mode
+## API Configuration
 
-### Step 1: Start the Backend API Server
+The website automatically detects which API to use:
+
+| Environment | API URL | How to Access |
+|------------|---------|---------------|
+| **File Protocol** | https://backend-drab-alpha-85.vercel.app | Double-click HTML files |
+| **Production** | https://backend-drab-alpha-85.vercel.app | Any hosted domain |
+| **Local Dev** | http://localhost:8000 | http://localhost:8080 |
+
+The configuration is in `api-config.js` and automatically switches based on hostname.
+
+## Running in Development Mode (Optional)
+
+**Note:** You only need this if you want to test backend changes locally. For frontend development, just open the files directly!
+
+### Step 1: Start the Backend API Server (Optional)
 
 The backend serves the gallery images from the database.
 

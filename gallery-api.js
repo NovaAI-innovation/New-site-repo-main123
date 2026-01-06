@@ -3,23 +3,25 @@
  * Fetches gallery images from the backend API and renders them dynamically
  */
 
-// Check if API_BASE_URL is defined
+// Check if API configuration is loaded
 if (typeof API_BASE_URL === 'undefined') {
     console.error('API_BASE_URL is not defined! Make sure api-config.js is loaded before gallery-api.js');
 }
 
-// API configuration (uses API_BASE_URL from api-config.js)
-const API_ENDPOINTS = {
-    GALLERY_IMAGES: typeof API_BASE_URL !== 'undefined' ? `${API_BASE_URL}/api/gallery-images` : '/api/gallery-images',
-};
+if (typeof API_ENDPOINTS === 'undefined') {
+    console.error('API_ENDPOINTS is not defined! Make sure api-config.js is loaded before gallery-api.js');
+}
 
 /**
  * Fetch gallery images from the API
  */
 async function fetchGalleryImages() {
     try {
-        console.log('Fetching gallery images from:', API_ENDPOINTS.GALLERY_IMAGES);
-        const response = await fetch(API_ENDPOINTS.GALLERY_IMAGES, {
+        const endpoint = API_ENDPOINTS.GALLERY_IMAGES;
+        console.log('Fetching gallery images from:', endpoint);
+        console.log('API_BASE_URL:', API_BASE_URL);
+
+        const response = await fetch(endpoint, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -37,8 +39,10 @@ async function fetchGalleryImages() {
         return images;
     } catch (error) {
         console.error('Error fetching gallery images:', error);
-        console.error('API endpoint:', API_ENDPOINTS.GALLERY_IMAGES);
+        console.error('API endpoint:', API_ENDPOINTS?.GALLERY_IMAGES || 'Not defined');
+        console.error('API_BASE_URL:', API_BASE_URL || 'Not defined');
         console.error('Make sure the backend API is running and accessible');
+        console.error('Full error details:', error.message, error.stack);
         // Return empty array on error to prevent breaking the page
         return [];
     }

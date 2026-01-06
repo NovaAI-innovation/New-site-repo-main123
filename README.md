@@ -1,6 +1,21 @@
 # Makayla Moon - Modern Website
 
-A modern, elegant, and professional redesign of the Makayla Moon content creator website.
+A modern, elegant, and professional redesign of the Makayla Moon content creator website with **dynamic gallery powered by cloud-hosted CMS**.
+
+## ✨ NEW: Cloud-Hosted Gallery
+
+**The gallery now works when you open files directly!** No server setup required.
+
+### Quick Start:
+1. **Double-click `gallery.html`** to open it in your browser
+2. Gallery images automatically load from the cloud API
+3. That's it! No installation, no servers needed.
+
+The website uses a cloud-hosted API at: `https://backend-drab-alpha-85.vercel.app`
+
+- **View gallery**: Just open `gallery.html`
+- **Test API connection**: Open `test-gallery-api.html`
+- **Full site**: Open `index.html`
 
 ## 🎨 Design Features
 
