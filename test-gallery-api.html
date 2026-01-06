@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery API Test - Development Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 { color: #f8981e; }
+        h2 { color: #f4e5d4; margin-top: 30px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #28a745; }
+        .error { background: #dc3545; }
+        .info { background: #17a2b8; }
+        .warning { background: #ffc107; color: #000; }
+        #results { margin-top: 20px; }
+        .image-preview {
+            display: inline-block;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            margin: 5px;
+            border: 2px solid #f8981e;
+            border-radius: 8px;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .controls button {
+            background: #f8981e;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .controls button:hover {
+            background: #ff9f3a;
+        }
+        .controls input {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #f8981e;
+            background: #333;
+            color: #fff;
+            min-width: 300px;
+        }
+        code {
+            background: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #f8981e;
+        }
+        .env-info {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .env-info dl {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+        }
+        .env-info dt {
+            color: #f8981e;
+            font-weight: bold;
+        }
+        .env-info dd {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gallery API Connection Test</h1>
+    <p>This page helps you verify that your frontend can connect to the backend API.</p>
+
+    <div class="env-info">
+        <h3>Environment Information</h3>
+        <dl id="env-info"></dl>
+    </div>
+
+    <div class="controls">
+        <h3>API URL Configuration</h3>
+        <p>Current API URL: <code id="current-api-url"></code></p>
+        <div>
+            <input type="text" id="custom-api-url" placeholder="http://localhost:8000" />
+            <button onclick="setCustomApiUrl()">Set Custom URL</button>
+            <button onclick="clearCustomApiUrl()">Use Auto-Detect</button>
+            <button onclick="testConnection()">Re-Test Connection</button>
+        </div>
+        <p style="font-size: 12px; color: #888; margin-top: 10px;">
+            Custom URL is stored in localStorage and persists across page reloads.
+        </p>
+    </div>
+
+    <div id="status"></div>
+    <div id="results"></div>
+
+    <!-- Load the actual API config that the gallery uses -->
+    <script src="api-config.js"></script>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+        const envInfoDiv = document.getElementById('env-info');
+        const currentApiUrlSpan = document.getElementById('current-api-url');
+
+        // Display environment information
+        function displayEnvironmentInfo() {
+            const isFileProtocol = window.location.protocol === 'file:';
+            const override = localStorage.getItem('API_BASE_URL');
+
+            envInfoDiv.innerHTML = `
+                <dt>Current URL:</dt>
+                <dd><code>${window.location.href}</code></dd>
+                <dt>Protocol:</dt>
+                <dd><code>${window.location.protocol}</code> ${isFileProtocol ? '<span style="color: #dc3545;">⚠️ Use HTTP server instead!</span>' : '<span style="color: #28a745;">✓</span>'}</dd>
+                <dt>Hostname:</dt>
+                <dd><code>${window.location.hostname || 'N/A'}</code></dd>
+                <dt>Port:</dt>
+                <dd><code>${window.location.port || 'default'}</code></dd>
+                <dt>API Base URL:</dt>
+                <dd><code>${API_BASE_URL}</code></dd>
+                <dt>Override Active:</dt>
+                <dd>${override ? '<code>' + override + '</code>' : 'No (auto-detect)'}</dd>
+            `;
+
+            currentApiUrlSpan.textContent = API_BASE_URL;
+            document.getElementById('custom-api-url').value = override || '';
+        }
+
+        function setCustomApiUrl() {
+            const input = document.getElementById('custom-api-url');
+            const url = input.value.trim();
+            if (url) {
+                localStorage.setItem('API_BASE_URL', url);
+                location.reload();
+            } else {
+                alert('Please enter a valid URL');
+            }
+        }
+
+        function clearCustomApiUrl() {
+            localStorage.removeItem('API_BASE_URL');
+            location.reload();
+        }
+
+        async function testConnection() {
+            const API_URL = API_ENDPOINTS.GALLERY_IMAGES;
+            statusDiv.innerHTML = '<div class="status info">Testing connection to: <code>' + API_URL + '</code></div>';
+
+            try {
+                console.log('Fetching from:', API_URL);
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const images = await response.json();
+                console.log('Fetched images:', images.length);
+
+                statusDiv.innerHTML = `
+                    <div class="status success">✓ Success! Fetched ${images.length} images from the API</div>
+                    <div class="status info"><strong>Response Status:</strong> ${response.status} ${response.statusText}</div>
+                    <div class="status info"><strong>Content-Type:</strong> ${response.headers.get('content-type')}</div>
+                    <div class="status info"><strong>CORS Origin:</strong> ${response.headers.get('access-control-allow-origin') || 'Not set'}</div>
+                `;
+
+                // Display images
+                if (images.length > 0) {
+                    resultsDiv.innerHTML = '<h2>Gallery Images Preview (showing first 10 of ' + images.length + '):</h2>';
+                    images.slice(0, 10).forEach((img, idx) => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = img.cloudinary_url;
+                        imgElement.alt = img.caption || `Gallery image ${idx + 1}`;
+                        imgElement.className = 'image-preview';
+                        imgElement.title = `ID: ${img.id}\nCaption: ${img.caption || 'None'}\nCreated: ${img.created_at}`;
+                        imgElement.onerror = function() {
+                            console.error('Failed to load image:', img.cloudinary_url);
+                            this.style.border = '2px solid red';
+                            this.title = 'Failed to load image';
+                        };
+                        resultsDiv.appendChild(imgElement);
+                    });
+
+                    resultsDiv.innerHTML += `
+                        <div style="margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 8px;">
+                            <h3>✓ Gallery Integration Working!</h3>
+                            <p>Your gallery page should now display all ${images.length} images.</p>
+                            <p><a href="gallery.html" style="color: #f8981e;">→ View the full gallery page</a></p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="status warning">
+                            <strong>⚠️ No images in database</strong>
+                            <p>The API is working, but there are no images to display.</p>
+                            <p>Use the CMS to upload images to the gallery.</p>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                const isFileProtocol = window.location.protocol === 'file:';
+
+                let troubleshooting = `
+                    <div class="status error">✗ Connection Failed: ${error.message}</div>
+                    <div class="status info"><strong>Troubleshooting Steps:</strong></div>
+                `;
+
+                if (isFileProtocol) {
+                    troubleshooting += `
+                        <div class="status error">
+                            <strong>❌ You're using file:// protocol!</strong>
+                            <p>This won't work due to browser security restrictions.</p>
+                            <p><strong>Solution:</strong> Start an HTTP server:</p>
+                            <pre style="background: #000; padding: 10px; border-radius: 5px; overflow-x: auto;">cd New-site-repo-main
+python -m http.server 8080</pre>
+                            <p>Then access: <code>http://localhost:8080/test-gallery-api.html</code></p>
+                        </div>
+                    `;
+                } else {
+                    troubleshooting += `
+                        <div class="status info">
+                            <ol style="text-align: left; margin-left: 20px;">
+                                <li>Check if backend is running: <a href="http://localhost:8000/health" target="_blank" style="color: #f8981e;">http://localhost:8000/health</a></li>
+                                <li>Open browser DevTools (F12) and check the Console and Network tabs</li>
+                                <li>Verify CORS headers in the Network tab</li>
+                                <li>Check backend logs for errors</li>
+                                <li>Try using the custom URL override above to test different API endpoints</li>
+                            </ol>
+                        </div>
+                    `;
+                }
+
+                troubleshooting += `
+                    <div class="status info">
+                        <strong>See DEVELOPMENT.md for detailed setup instructions</strong>
+                    </div>
+                `;
+
+                statusDiv.innerHTML = troubleshooting;
+            }
+        }
+
+        // Initialize and run test when page loads
+        displayEnvironmentInfo();
+        testConnection();
+    </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makayla Moon | Book a Session</title>
+    <meta name="description" content="Book a session with Makayla Moon. Fill out the booking form to request an appointment.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+    <!-- Age Verification Modal -->
+    <div id="age-modal" class="age-modal">
+        <div class="age-modal-content">
+            <h2>Age Verification</h2>
+            <p>This website contains content intended for adults only.</p>
+            <p>Please confirm you are 18 years or older to continue.</p>
+            <div class="age-modal-buttons">
+                <button id="age-confirm" class="btn btn-primary">I am 18+</button>
+                <button id="age-decline" class="btn btn-secondary">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">Makayla Moon</a>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link">Services</a></li>
+                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
+                <li><a href="https://pgcbgy-5r.myshopify.com/" target="_blank" rel="noopener noreferrer" class="nav-link">Shop</a></li>
+                <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="book.html" class="nav-link">Book</a></li>
+                <li><a href="etiquette.html" class="nav-link">Etiquette</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Book a Session -->
+    <section id="book" class="connect section">
+        <div class="container">
+            <div class="connect-content">
+                <h2 class="section-title centered">Book a Session</h2>
+                <div class="title-underline centered"></div>
+                <p class="section-subtitle">Fill out the form below to request a booking. All information will be kept confidential.</p>
+
+                <!-- Booking Form -->
+                <form id="booking-form" class="booking-form">
+                    <!-- Full Name - Full Width -->
+                    <div class="form-row form-row-single">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" id="name" name="name" required placeholder="Your full name">
+                        </div>
+                    </div>
+
+                    <!-- Email & Phone - Two Column on Desktop -->
+                    <div class="form-row form-row-double">
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required placeholder="(555) 123-4567">
+                        </div>
+                    </div>
+
+                    <!-- Pronouns & Contact Method - Two Column on Desktop -->
+                    <div class="form-row form-row-double">
+                        <div class="form-group">
+                            <label for="pronouns">Pronouns *</label>
+                            <select id="pronouns" name="pronouns" required>
+                                <option value="">Select your pronouns</option>
+                                <option value="she/her">She/Her</option>
+                                <option value="he/him">He/Him</option>
+                                <option value="they/them">They/Them</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_method">Preferred Contact Method *</label>
+                            <select id="contact_method" name="contact_method" required>
+                                <option value="">Select contact method</option>
+                                <option value="email">Email</option>
+                                <option value="phone">Phone Call</option>
+                                <option value="text">Text Message</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Desired City - Full Width -->
+                    <div class="form-row form-row-single">
+                        <div class="form-group">
+                            <label for="city">Desired City/Location *</label>
+                            <input type="text" id="city" name="city" required placeholder="e.g., Edmonton, Calgary">
+                        </div>
+                    </div>
+
+                    <!-- Date Length & Date/Time - Two Column on Desktop -->
+                    <div class="form-row form-row-double">
+                        <div class="form-group">
+                            <label for="date_length">Date Length *</label>
+                            <select id="date_length" name="date_length" required>
+                                <option value="">Select date length</option>
+                                <option value="half_hour">Half Hour</option>
+                                <option value="1_hour">1 Hour</option>
+                                <option value="2_hours">2 Hours</option>
+                                <option value="3_hours">3 Hours</option>
+                                <option value="half_day">Half Day (4-6 hours)</option>
+                                <option value="full_day">Full Day (8+ hours)</option>
+                                <option value="overnight">Overnight</option>
+                                <option value="weekend">Weekend</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="preferred_datetime">Preferred Date & Time *</label>
+                            <input type="datetime-local" id="preferred_datetime" name="preferred_datetime" required min="">
+                        </div>
+                    </div>
+
+                    <!-- Location Preference - Full Width -->
+                    <div class="form-row form-row-single">
+                        <div class="form-group">
+                            <label for="location_preference">Location Preference *</label>
+                            <select id="location_preference" name="location_preference" required>
+                                <option value="">Select location preference</option>
+                                <option value="incall">Incall (My Location)</option>
+                                <option value="outcall">Outcall (Your Location)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information - Full Width -->
+                    <div class="form-row form-row-single">
+                        <div class="form-group">
+                            <label for="additional_info">Additional Information (Optional)</label>
+                            <textarea id="additional_info" name="additional_info" rows="4" placeholder="Any special requests or additional details..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit Booking Request</button>
+                    </div>
+                </form>
+
+                <p class="booking-note">
+                    <small>All information is kept confidential. Response within 24 hours.</small>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Makayla Moon Inc. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <button class="lightbox-close" id="lightbox-close">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev">&#8249;</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next">&#8250;</button>
+        <img src="" alt="" id="lightbox-image">
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makayla Moon | Services</title>
+    <meta name="description" content="Explore the services offered by Makayla Moon - exclusive content, experiences, and more.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+    <!-- Age Verification Modal -->
+    <div id="age-modal" class="age-modal">
+        <div class="age-modal-content">
+            <h2>Age Verification</h2>
+            <p>This website contains content intended for adults only.</p>
+            <p>Please confirm you are 18 years or older to continue.</p>
+            <div class="age-modal-buttons">
+                <button id="age-confirm" class="btn btn-primary">I am 18+</button>
+                <button id="age-decline" class="btn btn-secondary">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">Makayla Moon</a>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link">Services</a></li>
+                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
+                <li><a href="https://pgcbgy-5r.myshopify.com/" target="_blank" rel="noopener noreferrer" class="nav-link">Shop</a></li>
+                <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="book.html" class="nav-link">Book</a></li>
+                <li><a href="etiquette.html" class="nav-link">Etiquette</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Services Section (placeholder content) -->
+    <section id="services" class="about section">
+        <div class="container">
+            <div class="about-content" style="grid-template-columns: 1fr;">
+                <div class="about-text reveal-delay" style="max-width: 100%;">
+                    <h2 class="section-title" style="text-align: center;">Services</h2>
+                    <div class="title-underline" style="margin: 0 auto;"></div>
+                    
+                    <h3 style="margin-top: var(--spacing-md); color: var(--accent-gold); font-size: 1.5rem;">Service Offerings</h3>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>1 hour — Meet & Greet — $500</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Perfect for those looking for a brief encounter</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>1.5 hours — Stay Awhile — $800</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Kick back & relax, tell me about your day, enjoy a complementary massage if that's your thing (90 min)</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>2 hours — The Ideal Rendezvous — $900</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">This is my preference for a first time meet. We can properly get to know each other over cocktails & have some fun without the rush!</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>3 hours — Call Me Baby — $1,400</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Now we're talking. Wine me. Dine me. Tell me a secret. *Dates 3 hours or longer must include a meal.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>4 hours — The Sweet Spot — $1,800</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Take me out on the town! Need date ideas? I love planning itineraries. See my companionship about me. *Dates longer than 3 hours must include a meal.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>6 hours — The Real Deal — $2,700</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">If you're booking this much time, you've likely had a taste already! Which means you understand that, at least with me, more is MORE! Let's make the day count. *Dates longer than 3 hours must include a meal.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>8 Waking Hours — Day Soirée — $3,600</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Itinerary example: art gallery, happy hour, dinner, a show, cocktails, and plenty of fun to be had in between!</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>14 Waking Hours — Day To Remember — $4,400</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Itinerary example: A hiking/ski/museum day, spa, lunch & dinner, cocktails, and plenty of fun in between!</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>30 Minute Coffee or Cocktail Consultation — $250</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">This is perfect for the person that would like to meet me before our first lengthy encounter. The consult allows us to feel each other out and make small talk about our upcoming date. Perhaps we may discuss any lingering details, get a little flirty, share in our excitement. If we hit it off, it may be hard to say goodbye. But think about it...wouldn't you rather I leave you wanting more? This is the perfect pre-date teaser!</p>
+                        
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Consideration must be sent in full at time of booking</p>
+                        
+                        <h3 style="margin-top: var(--spacing-lg); color: var(--accent-gold); font-size: 1.5rem;">Extended Stays</h3>
+                        
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-xs); color: rgba(255, 255, 255, 0.9);"><strong>14 hours — Overnight — $4,400</strong></p>
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-xs); color: rgba(255, 255, 255, 0.9);"><strong>24 hours — Full Night & Day — $5,000</strong></p>
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-xs); color: rgba(255, 255, 255, 0.9);"><strong>48 Hours — Weekend — $6,000</strong></p>
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-xs); color: rgba(255, 255, 255, 0.9);"><strong>Three Days — $8,000</strong></p>
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);"><strong>Four Days — $9,500</strong></p>
+                        
+                        <h3 style="margin-top: var(--spacing-lg); color: var(--accent-gold); font-size: 1.5rem;">Travel</h3>
+                        
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Edmonton is my home base, but my heart loves to wander. I'd be thrilled to plan a getaway with you…or let our paths cross in your city! Let's see where the adventure takes us.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Drive Me To You</strong></p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Can't make it to Edmonton? No problem! I accept DMTYs within a 4 hour radius of Edmonton — 3 hour date minimum</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">An additional $200 fee is added to the consideration to cover my driving time + travel expenses.</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">If your location is 1-2 hours from Edmonton, the additional fee is only $100.</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">You are responsible for providing an outcall location for us</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Sponsored Tours</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Want me to visit your city? You can sponsor a tour! Book a 4 hour minimum date, and cover my travel costs to your city. I'll take care of lodging.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Fly Me To You</strong></p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Craving me all to yourself but not in Edmonton? Consider a FMTY! I'll happily come to you for an exclusive rendezvous. 6 hour minimum rate ($1,800).</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Domestic FMTYs require my regular consideration, flight, and lodging (if separate lodging is needed for discretion)</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">International FMTYs require my regular consideration + $1,500 for travel & expenses + lodging (if separate lodging is needed for discretion)</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">International FMTYs are only offered to my established & trusted clients only. If we are new to each other, let's hope our schedules align during one of my international tours!</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Travel Together</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">For my established & trusted clients, i cannot think of a better way to spend our time than traveling to new places together. Let's lose ourselves in Patagonia's peaks, bathe under the spanish sun, drift away on an alaskan cruise, gawk at the gothic architecture of France. The world is ours &lt;3</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>A Special FMTY Offering</strong></p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">I adore a rhythm of connection & solitude on longer trips—if you do too, keep reading.</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">If there's a dreamy destination you'd love to take me (what a generous, adventurous suitor you are!), I'm all about co-creating our ideal experience. Want 2 days together, 3 days apart, then 2 more together? I'm happy to count that as a 4-day booking, not 7.</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Note: I would cover my own lodging and expenses on our solo days.</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Those solo days? Maybe you're off on a silent hike, I'm deep in a retreat, or we're reconnecting with friends.</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Why do I offer this? Because connection shouldn't come with the pressure to be joined at the hip. Time apart can be just as nourishing as time together.</p>
+                        
+                        <h3 style="margin-top: var(--spacing-lg); color: var(--accent-gold); font-size: 1.5rem;">Remote Services</h3>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>1 Hour — Phone Date — $300</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Miss me? Want to chat & get a little flirty over a phone or video call? I'm waiting.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Texting Subscription — 30 days — $350</strong></p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">This texting offering is designed for my established clients who crave a little connection in between our in-person moments &lt;3</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">You'll receive at least two texts (or emails) daily from yours truly, for 30 days.</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">1 thoughtful message</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">1 selfie</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Depending on my energy & availability, you might receive even more. But at the very least, expect a daily dose of ME in your inbox!</p>
+                        
+                        <h3 style="margin-top: var(--spacing-lg); color: var(--accent-gold); font-size: 1.5rem;">Deposits and Cancelations</h3>
+                        
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">20% deposit for local Edmonton bookings</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">50% deposit for all domestic FMTY's</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Full pre-payment for international FMTYs</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">On the rare occasion that I need to cancel our date, your deposit will be refunded in full.</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Your deposit will not be refunded if you cancel within 24-48 hours of our date, but I can save & apply it to our next date if you'd like to reschedule</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">50% of your deposit will be refunded if you cancel 3+ days before our scheduled date/trip. Or I can save & apply the rest to our next date if you'd like to reschedule</p>
+                        
+                        <h3 style="margin-top: var(--spacing-lg); color: var(--accent-gold); font-size: 1.5rem;">Details & Options</h3>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Customize Your Session</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">If you did not see a timeframe that works for you on the list(s) above, just reach out! I am flexible.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>In-Date Extension — $400/hr</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">If you're not ready for our date to end, we can extend our time together while in session (if I am available to do so)!</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Incall</strong></p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">A hotel incall is available for an additional deposit</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">$89-120 during day</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">$180-250 at night</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Once we become trusted & established friends, an incall fee will not be necessary.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Couples</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">I do date couples. Please reach out to me for more info.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Duos</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">I do offer duos.</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">*Disclaimers: the other provider must be bisexual and/or pansexual.</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Age Discretion</strong></p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">I will not date anyone younger than 21 years old</p>
+                        
+                        <h3 style="margin-top: var(--spacing-lg); color: var(--accent-gold); font-size: 1.5rem;">VIP Arrangements</h3>
+                        
+                        <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">My VIP arrangement options are ideal for those who want to establish a deeper connection with me, on a more regular basis.</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Month-to-month basis (or quarterly), and prepaid in advance</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">*Ask me for details</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>VIP Perks</strong></p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">More for your consideration</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Priority booking (I do not cancel bookings with other people, but your booking process is expedited)</p>
+                        
+                        <p style="margin-top: var(--spacing-sm);"><strong>Policies Regarding VIP Packages</strong></p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Packages must be pre-paid and are month-to-month (or quarterly)</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">Packages are not reoccurring</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">You cannot request a regular date prior to an arrangement, and then request your regular date be part of the VIP arrangement</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">You have 30 days to use you VIP status</p>
+                        <p style="margin-bottom: var(--spacing-sm); color: rgba(255, 255, 255, 0.9);">However, if there is an emergency and you must cancel, I would be willing to extend by 7 days.</p>
+                        <p style="margin-bottom: var(--spacing-md); color: rgba(255, 255, 255, 0.9);">Refunds are not offered for any arrangement options</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Makayla Moon Inc. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <button class="lightbox-close" id="lightbox-close">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev">&#8249;</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next">&#8250;</button>
+        <img src="" alt="" id="lightbox-image">
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

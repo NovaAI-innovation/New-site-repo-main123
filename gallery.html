@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makayla Moon | Gallery</title>
+    <meta name="description" content="A curated collection of Makayla Moon's exclusive work and photography.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+    <!-- Age Verification Modal -->
+    <div id="age-modal" class="age-modal">
+        <div class="age-modal-content">
+            <h2>Age Verification</h2>
+            <p>This website contains content intended for adults only.</p>
+            <p>Please confirm you are 18 years or older to continue.</p>
+            <div class="age-modal-buttons">
+                <button id="age-confirm" class="btn btn-primary">I am 18+</button>
+                <button id="age-decline" class="btn btn-secondary">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">Makayla Moon</a>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link">Services</a></li>
+                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
+                <li><a href="https://pgcbgy-5r.myshopify.com/" target="_blank" rel="noopener noreferrer" class="nav-link">Shop</a></li>
+                <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+                <li><a href="book.html" class="nav-link">Book</a></li>
+                <li><a href="etiquette.html" class="nav-link">Etiquette</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery section">
+        <div class="container">
+            <h2 class="section-title centered">Gallery</h2>
+            <div class="title-underline centered"></div>
+            <p class="section-subtitle">A curated collection of my work</p>
+            
+            <!-- Gallery Grid Container -->
+            <div class="gallery-grid-container">
+                <div class="gallery-grid" id="gallery-grid">
+                    <!-- Gallery images will be loaded dynamically from API -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Makayla Moon Inc. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <button class="lightbox-close" id="lightbox-close">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev">&#8249;</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next">&#8250;</button>
+        <img src="" alt="" id="lightbox-image">
+    </div>
+
+    <!-- Main JavaScript -->
+    <!-- API Configuration (must load first) -->
+    <script src="api-config.js"></script>
+    <!-- Gallery API Integration -->
+    <script src="gallery-api.js"></script>
+    <!-- Lightbox Functionality -->
+    <script src="gallery-lightbox.js"></script>
+    <!-- Main Script -->
+    <script src="script.js"></script>
+</body>
+</html>
