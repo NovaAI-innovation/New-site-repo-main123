@@ -345,15 +345,32 @@
 
             <!-- Authentication Section -->
             <div id="auth-section" class="auth-section">
-                <h2 style="color: var(--text-light); margin-bottom: var(--spacing-md);">Login</h2>
-                <div id="auth-error" class="error hidden"></div>
-                <form id="auth-form">
+                <div class="auth-icon">🔒</div>
+                <h2 class="auth-title">Content Management System</h2>
+                <p class="auth-description">Enter your credentials to access the gallery management dashboard</p>
+
+                <div id="auth-error" class="auth-error-message" style="display: none;"></div>
+
+                <form id="auth-form" class="auth-form">
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required autocomplete="current-password">
+                        <label for="password">Administrator Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password">
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                    <button type="submit" class="btn btn-primary auth-submit-btn">
+                        <span class="btn-text">Access Dashboard</span>
+                        <span class="btn-icon">→</span>
+                    </button>
                 </form>
+
+                <div class="auth-footer">
+                    <p>Secure access to manage gallery images and content</p>
+                </div>
             </div>
 
             <!-- CMS Dashboard -->

@@ -248,16 +248,30 @@ function initializeGalleryCarousel() {
 
 // Listen for gallery loaded event
 window.addEventListener('galleryLoaded', () => {
-    initializeGalleryCarousel();
+    // Only initialize carousel if carousel elements exist
+    const hasCarousel = document.querySelector('.gallery-slide') || document.getElementById('carousel-indicators');
+    if (hasCarousel) {
+        initializeGalleryCarousel();
+    }
 });
 
 // Initialize on page load if slides already exist (fallback for non-API gallery)
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(initializeGalleryCarousel, 100);
+        setTimeout(() => {
+            const hasCarousel = document.querySelector('.gallery-slide') || document.getElementById('carousel-indicators');
+            if (hasCarousel) {
+                initializeGalleryCarousel();
+            }
+        }, 100);
     });
 } else {
-    setTimeout(initializeGalleryCarousel, 100);
+    setTimeout(() => {
+        const hasCarousel = document.querySelector('.gallery-slide') || document.getElementById('carousel-indicators');
+        if (hasCarousel) {
+            initializeGalleryCarousel();
+        }
+    }, 100);
 }
 
 // ===========================

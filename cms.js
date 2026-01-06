@@ -410,23 +410,22 @@ refreshBtn.addEventListener('click', () => {
 // Utility functions
 function showError(element, message) {
     element.textContent = message;
-    element.className = 'error';
-    element.classList.remove('hidden');
+    element.style.display = 'block';
 }
 
 function showSuccess(element, message) {
     element.textContent = message;
     element.className = 'success';
-    element.classList.remove('hidden');
+    element.style.display = 'block';
     setTimeout(() => hideMessage(element), 5000);
 }
 
 function hideError(element) {
-    element.classList.add('hidden');
+    element.style.display = 'none';
 }
 
 function hideMessage(element) {
-    element.classList.add('hidden');
+    element.style.display = 'none';
 }
 
 // Initialize on page load
