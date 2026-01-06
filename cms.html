@@ -375,44 +375,139 @@
 
             <!-- CMS Dashboard -->
             <div id="cms-dashboard" class="cms-dashboard hidden">
-                <!-- Upload Section -->
-                <div class="cms-section">
-                    <h2>Upload Images</h2>
-                    <div id="upload-message"></div>
-                    <form id="upload-form">
-                        <div class="form-group">
-                            <label>Select Images</label>
-                            <div class="file-input-wrapper">
-                                <input type="file" id="image-files" name="files" multiple accept="image/*" required>
-                                <label for="image-files" class="file-input-label">
-                                    <span>Click to select images or drag and drop</span>
-                                </label>
+
+                <!-- Dashboard Header with Stats -->
+                <div class="cms-stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon">🖼️</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-images">0</div>
+                            <div class="stat-label">Total Images</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💾</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-storage">0 MB</div>
+                            <div class="stat-label">Storage Used</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📤</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="selected-count">0</div>
+                            <div class="stat-label">Selected</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-card-action">
+                        <button id="logout-btn" class="btn btn-secondary btn-logout">
+                            <span>🚪</span> Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Upload Section with Drag & Drop -->
+                <div class="cms-section upload-section">
+                    <h2>
+                        <span class="section-icon">📤</span>
+                        Upload Images
+                    </h2>
+
+                    <div id="upload-message" class="cms-message"></div>
+
+                    <!-- Drag & Drop Zone -->
+                    <div id="drop-zone" class="drop-zone">
+                        <input type="file" id="image-files" name="files" multiple accept="image/*" style="display: none;">
+                        <div class="drop-zone-content">
+                            <div class="drop-zone-icon">📁</div>
+                            <h3>Drag & Drop Images Here</h3>
+                            <p>or click to browse</p>
+                            <button type="button" class="btn btn-primary" id="browse-btn">
+                                Browse Files
+                            </button>
+                            <div class="drop-zone-hint">
+                                Supports: JPG, PNG, GIF, WEBP • Max 10MB per file
                             </div>
-                            <div id="file-list" class="file-list"></div>
                         </div>
-                        <div class="form-group">
-                            <label for="caption">Caption (optional - applies to all selected images)</label>
-                            <textarea id="caption" name="caption" placeholder="Enter a caption for the images"></textarea>
+                    </div>
+
+                    <!-- File Preview Area -->
+                    <div id="file-preview-container" class="file-preview-container" style="display: none;">
+                        <div class="file-preview-header">
+                            <h4>Files Ready to Upload (<span id="file-count">0</span>)</h4>
+                            <button type="button" class="btn btn-secondary btn-small" id="clear-files-btn">Clear All</button>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="upload-btn">Upload Images</button>
-                    </form>
+                        <div id="file-preview-grid" class="file-preview-grid"></div>
+
+                        <div class="upload-options">
+                            <div class="form-group">
+                                <label for="caption">Caption (optional - applies to all images)</label>
+                                <input type="text" id="caption" name="caption" placeholder="Enter a caption for these images">
+                            </div>
+                            <button type="button" class="btn btn-primary btn-large" id="upload-btn">
+                                <span class="btn-icon">⬆️</span>
+                                <span>Upload <span id="upload-count">0</span> Images</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Gallery Management Section -->
-                <div class="cms-section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
-                        <h2>Gallery Images</h2>
-                        <button id="logout-btn" class="btn btn-secondary">Logout</button>
+                <div class="cms-section gallery-section">
+                    <div class="gallery-header">
+                        <h2>
+                            <span class="section-icon">🖼️</span>
+                            Gallery Images
+                            <span class="image-count-badge" id="gallery-count-badge">0</span>
+                        </h2>
+
+                        <div class="gallery-controls">
+                            <div class="search-box">
+                                <input type="text" id="search-input" placeholder="Search images..." />
+                                <span class="search-icon">🔍</span>
+                            </div>
+                            <select id="sort-select" class="sort-select">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="name-az">Name A-Z</option>
+                                <option value="name-za">Name Z-A</option>
+                            </select>
+                            <button id="refresh-btn" class="btn btn-secondary btn-icon-only" title="Refresh">
+                                🔄
+                            </button>
+                        </div>
                     </div>
-                    <div id="gallery-message"></div>
-                    <div class="bulk-actions">
-                        <button id="select-all-btn" class="btn btn-secondary">Select All</button>
-                        <button id="deselect-all-btn" class="btn btn-secondary">Deselect All</button>
-                        <button id="delete-selected-btn" class="btn btn-danger" disabled>Delete Selected</button>
-                        <button id="refresh-btn" class="btn btn-secondary">Refresh</button>
+
+                    <div id="gallery-message" class="cms-message"></div>
+
+                    <!-- Bulk Operations Toolbar (Hidden until images selected) -->
+                    <div id="bulk-toolbar" class="bulk-toolbar" style="display: none;">
+                        <div class="bulk-toolbar-info">
+                            <span class="bulk-icon">✓</span>
+                            <span id="bulk-count">0</span> images selected
+                        </div>
+                        <div class="bulk-toolbar-actions">
+                            <button id="select-all-btn" class="btn btn-secondary btn-small">Select All</button>
+                            <button id="deselect-all-btn" class="btn btn-secondary btn-small">Deselect All</button>
+                            <button id="delete-selected-btn" class="btn btn-danger btn-small">
+                                <span>🗑️</span> Delete Selected
+                            </button>
+                        </div>
                     </div>
-                    <div id="gallery-grid" class="gallery-grid">
-                        <div class="loading">Loading gallery images...</div>
+
+                    <!-- Enhanced Image Grid -->
+                    <div id="gallery-grid" class="cms-gallery-grid">
+                        <div class="gallery-loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading gallery images...</p>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="empty-state" class="empty-state" style="display: none;">
+                        <div class="empty-icon">📷</div>
+                        <h3>No Images Yet</h3>
+                        <p>Upload your first images to get started</p>
                     </div>
                 </div>
             </div>
@@ -425,5 +520,6 @@
     <script src="cms.js"></script>
 </body>
 </html>
+
 
 

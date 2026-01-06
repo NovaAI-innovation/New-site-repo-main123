@@ -54,11 +54,13 @@ const API_ENDPOINTS = {
     CMS_GALLERY_IMAGES: `${API_BASE_URL}/api/cms/gallery-images`,
     CMS_GALLERY_IMAGE: (id) => `${API_BASE_URL}/api/cms/gallery-images/${id}`,
     CMS_BULK_DELETE: `${API_BASE_URL}/api/cms/gallery-images/bulk`,
+    CMS_REORDER_IMAGES: `${API_BASE_URL}/api/cms/gallery-images/reorder`,
 };
 
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { API_BASE_URL, API_ENDPOINTS };
 }
+
 
 
