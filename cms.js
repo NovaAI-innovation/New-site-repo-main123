@@ -452,67 +452,110 @@ elements.clearFilesBtn.addEventListener('click', () => {
     elements.imageFilesInput.value = '';
 });
 
-// Upload files
+// Upload files in batches to avoid browser/server limits
 elements.uploadBtn.addEventListener('click', async () => {
     if (cmsState.filesToUpload.length === 0) {
         showError(elements.uploadMessage, 'No files selected');
         return;
     }
 
-    // Store the file count before upload for success message
     const fileCount = cmsState.filesToUpload.length;
+    const BATCH_SIZE = 5; // Upload 5 images at a time to avoid browser limits
 
     elements.uploadBtn.disabled = true;
     elements.uploadBtn.innerHTML = '<span>Uploading...</span>';
 
-    const formData = new FormData();
-    cmsState.filesToUpload.forEach((file, index) => {
-        formData.append('files', file);
-        // Add caption for this file if it exists
-        const caption = cmsState.fileCaptions[index];
-        if (caption && caption.trim()) {
-            formData.append('captions', caption.trim());
-        } else {
-            // Still append empty string to maintain index alignment
-            formData.append('captions', '');
-        }
-    });
-
     try {
-        const response = await fetchWithCORS(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
-            method: 'POST',
-            headers: {
-                'X-CMS-Password': cmsState.password
-            },
-            body: formData
-        });
+        let totalUploaded = 0;
+        let totalFailed = 0;
+        const allErrors = [];
 
-        if (response.ok) {
-            // Clear gallery cache so new images appear immediately
-            if (typeof window.clearGalleryCache === 'function') {
-                window.clearGalleryCache();
-                console.log('Gallery cache cleared after upload');
+        // Split files into batches
+        for (let i = 0; i < cmsState.filesToUpload.length; i += BATCH_SIZE) {
+            const batch = cmsState.filesToUpload.slice(i, i + BATCH_SIZE);
+            const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+            const totalBatches = Math.ceil(cmsState.filesToUpload.length / BATCH_SIZE);
+
+            // Update progress message
+            elements.uploadBtn.innerHTML = `<span>Uploading batch ${batchNumber}/${totalBatches}...</span>`;
+
+            // Build FormData for this batch
+            const formData = new FormData();
+            batch.forEach((file, batchIndex) => {
+                const originalIndex = i + batchIndex;
+                formData.append('files', file);
+
+                // Add caption for this file if it exists
+                const caption = cmsState.fileCaptions[originalIndex];
+                if (caption && caption.trim()) {
+                    formData.append('captions', caption.trim());
+                } else {
+                    formData.append('captions', '');
+                }
+            });
+
+            try {
+                const response = await fetchWithCORS(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
+                    method: 'POST',
+                    headers: {
+                        'X-CMS-Password': cmsState.password
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    totalUploaded += result.length || batch.length;
+                    console.log(`Batch ${batchNumber}/${totalBatches} uploaded successfully`);
+                } else {
+                    const error = await response.json();
+                    totalFailed += batch.length;
+                    allErrors.push(`Batch ${batchNumber}: ${error.detail || 'Upload failed'}`);
+                    console.error(`Batch ${batchNumber} failed:`, error);
+                }
+            } catch (error) {
+                totalFailed += batch.length;
+                allErrors.push(`Batch ${batchNumber}: ${error.message}`);
+                console.error(`Batch ${batchNumber} error:`, error);
             }
 
-            showSuccess(elements.uploadMessage, `Successfully uploaded ${fileCount} image(s)!`);
-            cmsState.filesToUpload = [];
-            cmsState.fileCaptions = {};
-            elements.imageFilesInput.value = '';
-            displayFilePreview();
-            loadGalleryImages();
-        } else {
-            const error = await response.json();
-            showError(elements.uploadMessage, error.detail || 'Upload failed');
+            // Small delay between batches to avoid overwhelming the server
+            if (i + BATCH_SIZE < cmsState.filesToUpload.length) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
         }
+
+        // Clear gallery cache so new images appear immediately
+        if (typeof window.clearGalleryCache === 'function') {
+            window.clearGalleryCache();
+            console.log('Gallery cache cleared after upload');
+        }
+
+        // Show results
+        if (totalUploaded > 0 && totalFailed === 0) {
+            showSuccess(elements.uploadMessage, `Successfully uploaded all ${totalUploaded} image(s)!`);
+        } else if (totalUploaded > 0 && totalFailed > 0) {
+            showError(elements.uploadMessage, `Uploaded ${totalUploaded} image(s), ${totalFailed} failed. Check console for details.`);
+            console.error('Upload errors:', allErrors);
+        } else {
+            showError(elements.uploadMessage, `All uploads failed. ${allErrors.join('; ')}`);
+        }
+
+        // Clear files and reload gallery
+        cmsState.filesToUpload = [];
+        cmsState.fileCaptions = {};
+        elements.imageFilesInput.value = '';
+        displayFilePreview();
+        loadGalleryImages();
+
     } catch (error) {
         console.error('Upload error:', error);
         showError(elements.uploadMessage, 'Failed to upload images');
     } finally {
         elements.uploadBtn.disabled = false;
-        // Restore button HTML and update count properly (use current file count, not the cleared array)
+        // Restore button HTML
         const currentFileCount = cmsState.filesToUpload.length;
         elements.uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span><span>Upload <span id="upload-count">' + currentFileCount + '</span> Images</span>';
-        // Re-query the uploadCount element since we just replaced the HTML
         elements.uploadCount = document.getElementById('upload-count');
     }
 });
