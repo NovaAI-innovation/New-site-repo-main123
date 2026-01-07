@@ -301,6 +301,124 @@
             font-size: 0.9rem;
         }
 
+        /* Emoji Picker Styles */
+        .emoji-picker-wrapper {
+            position: relative;
+            display: block;
+            margin-top: var(--spacing-xs);
+            width: 100%;
+            overflow: visible; /* Allow popup to extend beyond wrapper */
+        }
+
+        .emoji-picker-btn {
+            background: rgba(248, 152, 30, 0.2);
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            padding: 0.4rem 0.8rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: var(--transition-normal);
+            width: auto;
+            display: inline-block;
+        }
+
+        .emoji-picker-btn:hover {
+            background: rgba(248, 152, 30, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 0.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: var(--spacing-sm);
+            /* Increased width to accommodate 8 emojis per row: 
+               8 columns * ~48px + 7 gaps * 4.8px + padding = ~430px */
+            width: 400px;
+            max-width: min(400px, calc(100vw - 2rem)); /* Fixed width but responsive on small screens */
+            max-height: 350px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 10000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Prevent popup from being cut off at viewport edges */
+            box-sizing: border-box;
+        }
+
+        .emoji-picker.active {
+            display: block;
+        }
+
+        /* If popup would be cut off at top, show it below instead */
+        .emoji-picker-wrapper.picker-below .emoji-picker {
+            bottom: auto;
+            top: 100%;
+            margin-bottom: 0;
+            margin-top: 0.5rem;
+            transform: translateX(-50%);
+        }
+
+        .emoji-category {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .emoji-category-title {
+            color: var(--text-light);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.3rem;
+            width: 100%;
+            /* Ensure consistent width for single-direction scrolling */
+            min-width: 0;
+            overflow-x: hidden;
+        }
+
+        .emoji-item {
+            font-size: 1.5rem;
+            padding: 0.4rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: var(--transition-normal);
+            background: transparent;
+            border: none;
+            min-width: 0; /* Allow grid to control sizing */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .emoji-item:hover {
+            background: rgba(248, 152, 30, 0.2);
+            transform: scale(1.2);
+        }
+
+        .form-group-with-emoji {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .form-group-with-emoji input,
+        .form-group-with-emoji textarea {
+            flex: 1;
+        }
+
         @media (max-width: 768px) {
             .gallery-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -312,6 +430,13 @@
 
             .bulk-actions .btn {
                 width: 100%;
+            }
+
+            .emoji-picker {
+                width: 100%;
+                max-width: calc(100vw - 2rem);
+                left: 50%;
+                right: auto;
             }
         }
     </style>
@@ -455,6 +580,10 @@
                             <div class="form-group">
                                 <label for="caption">Caption (optional - applies to all images)</label>
                                 <input type="text" id="caption" name="caption" placeholder="Enter a caption for these images">
+                                <div class="emoji-picker-wrapper">
+                                    <button type="button" class="emoji-picker-btn" id="upload-emoji-btn" title="Add emoji">😀</button>
+                                    <div class="emoji-picker" id="upload-emoji-picker"></div>
+                                </div>
                             </div>
                             <button type="button" class="btn btn-primary btn-large" id="upload-btn">
                                 <span class="btn-icon">⬆️</span>
@@ -538,6 +667,10 @@
             <div class="form-group">
                 <label for="caption-edit-input">Caption</label>
                 <textarea id="caption-edit-input" placeholder="Enter caption for this image..." rows="3"></textarea>
+                <div class="emoji-picker-wrapper">
+                    <button type="button" class="emoji-picker-btn" id="edit-emoji-btn" title="Add emoji">😀</button>
+                    <div class="emoji-picker" id="edit-emoji-picker"></div>
+                </div>
             </div>
             <div class="modal-actions">
                 <button id="caption-save-btn" class="btn btn-primary">Save Caption</button>
