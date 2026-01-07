@@ -13,6 +13,7 @@ const cmsState = {
     selectedImages: new Set(),
     images: [],
     filesToUpload: [],
+    fileCaptions: {},  // Map of file index to caption string
     draggedElement: null,
     searchQuery: '',
     sortOrder: 'manual',  // Default to manual order to preserve backend ordering
@@ -48,7 +49,6 @@ const elements = {
     uploadCount: document.getElementById('upload-count'),
     clearFilesBtn: document.getElementById('clear-files-btn'),
     uploadBtn: document.getElementById('upload-btn'),
-    captionInput: document.getElementById('caption'),
     uploadMessage: document.getElementById('upload-message'),
 
     // Gallery
@@ -214,6 +214,8 @@ function handleFiles(files) {
 function displayFilePreview() {
     if (cmsState.filesToUpload.length === 0) {
         elements.filePreviewContainer.style.display = 'none';
+        // Clear captions when no files
+        cmsState.fileCaptions = {};
         return;
     }
 
@@ -226,14 +228,17 @@ function displayFilePreview() {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-preview-item';
 
+        // Image preview
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
         img.onload = () => URL.revokeObjectURL(img.src);
 
+        // File size overlay
         const overlay = document.createElement('div');
         overlay.className = 'file-preview-overlay';
         overlay.textContent = formatFileSize(file.size);
 
+        // Remove button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'file-remove-btn';
         removeBtn.innerHTML = '×';
@@ -242,20 +247,161 @@ function displayFilePreview() {
             removeFile(index);
         };
 
+        // Caption input wrapper
+        const captionWrapper = document.createElement('div');
+        captionWrapper.className = 'file-preview-caption-wrapper';
+
+        // Caption input (textarea for multiline)
+        const captionInput = document.createElement('textarea');
+        captionInput.className = 'file-preview-caption-input';
+        captionInput.id = `caption-input-${index}`;
+        captionInput.placeholder = 'Add caption for this image...';
+        captionInput.value = cmsState.fileCaptions[index] || '';
+        captionInput.dataset.fileIndex = index;
+        captionInput.rows = 3;
+        
+        // Store caption when changed
+        captionInput.addEventListener('input', (e) => {
+            const idx = parseInt(e.target.dataset.fileIndex);
+            const caption = e.target.value.trim();
+            if (caption) {
+                cmsState.fileCaptions[idx] = caption;
+            } else {
+                delete cmsState.fileCaptions[idx];
+            }
+        });
+
+        // Emoji picker wrapper
+        const emojiWrapper = document.createElement('div');
+        emojiWrapper.className = 'emoji-picker-wrapper';
+
+        // Emoji picker button
+        const emojiButton = document.createElement('button');
+        emojiButton.type = 'button';
+        emojiButton.className = 'emoji-picker-btn';
+        emojiButton.id = `emoji-btn-${index}`;
+        emojiButton.title = 'Add emoji';
+        emojiButton.textContent = '😀';
+
+        // Emoji picker div
+        const emojiPicker = document.createElement('div');
+        emojiPicker.className = 'emoji-picker';
+        emojiPicker.id = `emoji-picker-${index}`;
+
+        // Build emoji picker HTML
+        let pickerHTML = '';
+        for (const [category, emojis] of Object.entries(EMOJI_CATEGORIES)) {
+            pickerHTML += `
+                <div class="emoji-category">
+                    <div class="emoji-category-title">${category}</div>
+                    <div class="emoji-grid">
+                        ${emojis.map(emoji => `<button type="button" class="emoji-item" data-emoji="${emoji}">${emoji}</button>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        emojiPicker.innerHTML = pickerHTML;
+
+        // Toggle picker on button click with smart positioning
+        emojiButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Close all other pickers first
+            document.querySelectorAll('.emoji-picker.active').forEach(p => {
+                if (p !== emojiPicker) p.classList.remove('active');
+            });
+            
+            const isActive = emojiPicker.classList.contains('active');
+            emojiPicker.classList.toggle('active');
+            
+            if (!isActive) {
+                // Calculate if popup should appear above or below button
+                const buttonRect = emojiButton.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const pickerHeight = 350;
+                const spaceAbove = buttonRect.top;
+                const spaceBelow = viewportHeight - buttonRect.bottom;
+                
+                emojiWrapper.classList.remove('picker-below');
+                
+                if (spaceAbove < pickerHeight + 20 && spaceBelow > pickerHeight + 20) {
+                    emojiWrapper.classList.add('picker-below');
+                }
+            }
+        });
+
+        // Insert emoji on click
+        emojiPicker.addEventListener('click', (e) => {
+            if (e.target.classList.contains('emoji-item')) {
+                const emoji = e.target.dataset.emoji;
+                const cursorPos = captionInput.selectionStart || captionInput.value.length;
+                const textBefore = captionInput.value.substring(0, cursorPos);
+                const textAfter = captionInput.value.substring(cursorPos);
+                captionInput.value = textBefore + emoji + textAfter;
+                
+                // Update state
+                const idx = parseInt(captionInput.dataset.fileIndex);
+                const caption = captionInput.value.trim();
+                if (caption) {
+                    cmsState.fileCaptions[idx] = caption;
+                } else {
+                    delete cmsState.fileCaptions[idx];
+                }
+                
+                // Set cursor position after inserted emoji
+                const newPos = cursorPos + emoji.length;
+                captionInput.setSelectionRange(newPos, newPos);
+                captionInput.focus();
+                
+                // Close picker
+                emojiPicker.classList.remove('active');
+            }
+        });
+
+        // Close picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!emojiPicker.contains(e.target) && e.target !== emojiButton) {
+                emojiPicker.classList.remove('active');
+            }
+        });
+
+        emojiWrapper.appendChild(emojiButton);
+        emojiWrapper.appendChild(emojiPicker);
+
+        captionWrapper.appendChild(captionInput);
+        captionWrapper.appendChild(emojiWrapper);
+        
         fileItem.appendChild(img);
         fileItem.appendChild(overlay);
         fileItem.appendChild(removeBtn);
+        fileItem.appendChild(captionWrapper);
         elements.filePreviewGrid.appendChild(fileItem);
     });
 }
 
 function removeFile(index) {
     cmsState.filesToUpload.splice(index, 1);
+    // Rebuild captions map with updated indices
+    const newCaptions = {};
+    Object.keys(cmsState.fileCaptions).forEach(key => {
+        const oldIdx = parseInt(key);
+        if (oldIdx < index) {
+            // Before removed item, keep same index
+            newCaptions[oldIdx] = cmsState.fileCaptions[oldIdx];
+        } else if (oldIdx > index) {
+            // After removed item, shift index down by 1
+            newCaptions[oldIdx - 1] = cmsState.fileCaptions[oldIdx];
+        }
+        // oldIdx === index is skipped (the removed item)
+    });
+    cmsState.fileCaptions = newCaptions;
     displayFilePreview();
 }
 
 elements.clearFilesBtn.addEventListener('click', () => {
     cmsState.filesToUpload = [];
+    cmsState.fileCaptions = {};
     displayFilePreview();
     elements.imageFilesInput.value = '';
 });
@@ -267,18 +413,24 @@ elements.uploadBtn.addEventListener('click', async () => {
         return;
     }
 
+    // Store the file count before upload for success message
+    const fileCount = cmsState.filesToUpload.length;
+
     elements.uploadBtn.disabled = true;
     elements.uploadBtn.innerHTML = '<span>Uploading...</span>';
 
     const formData = new FormData();
-    cmsState.filesToUpload.forEach(file => {
+    cmsState.filesToUpload.forEach((file, index) => {
         formData.append('files', file);
+        // Add caption for this file if it exists
+        const caption = cmsState.fileCaptions[index];
+        if (caption && caption.trim()) {
+            formData.append('captions', caption.trim());
+        } else {
+            // Still append empty string to maintain index alignment
+            formData.append('captions', '');
+        }
     });
-
-    const caption = elements.captionInput.value.trim();
-    if (caption) {
-        formData.append('caption', caption);
-    }
 
     try {
         const response = await fetch(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
@@ -296,9 +448,9 @@ elements.uploadBtn.addEventListener('click', async () => {
                 console.log('Gallery cache cleared after upload');
             }
 
-            showSuccess(elements.uploadMessage, `Successfully uploaded ${cmsState.filesToUpload.length} image(s)!`);
+            showSuccess(elements.uploadMessage, `Successfully uploaded ${fileCount} image(s)!`);
             cmsState.filesToUpload = [];
-            elements.captionInput.value = '';
+            cmsState.fileCaptions = {};
             elements.imageFilesInput.value = '';
             displayFilePreview();
             loadGalleryImages();
@@ -311,7 +463,11 @@ elements.uploadBtn.addEventListener('click', async () => {
         showError(elements.uploadMessage, 'Failed to upload images');
     } finally {
         elements.uploadBtn.disabled = false;
-        elements.uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span><span>Upload <span id="upload-count">0</span> Images</span>';
+        // Restore button HTML and update count properly (use current file count, not the cleared array)
+        const currentFileCount = cmsState.filesToUpload.length;
+        elements.uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span><span>Upload <span id="upload-count">' + currentFileCount + '</span> Images</span>';
+        // Re-query the uploadCount element since we just replaced the HTML
+        elements.uploadCount = document.getElementById('upload-count');
     }
 });
 
@@ -436,13 +592,6 @@ function createImageCard(image, index) {
     name.className = 'image-card-name';
     name.textContent = image.caption || 'Untitled';
 
-    const meta = document.createElement('div');
-    meta.className = 'image-card-meta';
-    meta.innerHTML = `
-        <span>${formatDate(image.uploaded_at)}</span>
-        <span>ID: ${image.id}</span>
-    `;
-
     const actions = document.createElement('div');
     actions.className = 'image-card-actions';
 
@@ -465,7 +614,6 @@ function createImageCard(image, index) {
     actions.appendChild(editCaptionBtn);
     actions.appendChild(deleteBtn);
     info.appendChild(name);
-    info.appendChild(meta);
     info.appendChild(actions);
 
     card.appendChild(checkbox);
@@ -923,6 +1071,7 @@ elements.deleteSelectedBtn.addEventListener('click', async () => {
 
             showSuccess(elements.galleryMessage, `Deleted ${count} image(s)`);
             cmsState.selectedImages.clear();
+            updateSelectionUI(); // Hide bulk toolbar and reset selection count
             loadGalleryImages();
         } else {
             throw new Error('Bulk delete failed');
@@ -957,6 +1106,7 @@ async function deleteImage(imageId) {
 
             showSuccess(elements.galleryMessage, 'Image deleted');
             cmsState.selectedImages.delete(imageId);
+            updateSelectionUI(); // Update UI in case deleted image was selected
             loadGalleryImages();
         } else {
             throw new Error('Delete failed');
@@ -1137,11 +1287,9 @@ function initEmojiPicker(pickerId, buttonId, inputId) {
 // Initialize emoji pickers when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        initEmojiPicker('upload-emoji-picker', 'upload-emoji-btn', 'caption');
         initEmojiPicker('edit-emoji-picker', 'edit-emoji-btn', 'caption-edit-input');
     });
 } else {
-    initEmojiPicker('upload-emoji-picker', 'upload-emoji-btn', 'caption');
     initEmojiPicker('edit-emoji-picker', 'edit-emoji-btn', 'caption-edit-input');
 }
 

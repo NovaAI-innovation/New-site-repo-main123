@@ -454,6 +454,9 @@ window.addEventListener('scroll', () => {
     
     if (hero && scrolled < window.innerHeight) {
         hero.style.transform = `translateY(${scrolled * parallaxSpeed}px)`;
+    } else if (hero) {
+        // Reset transform when past hero to prevent layout issues
+        hero.style.transform = 'translateY(0)';
     }
 });
 
