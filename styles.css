@@ -2147,17 +2147,21 @@ button {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
+    align-items: start;
 }
 
 .service-card {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(248, 152, 30, 0.1));
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     border-radius: 15px;
     border: 1px solid rgba(248, 152, 30, 0.3);
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .service-card::before {
@@ -2215,7 +2219,7 @@ button {
     font-family: var(--font-serif);
     font-size: 1.5rem;
     color: var(--accent-gold);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
     position: relative;
     z-index: 1;
 }
@@ -2224,8 +2228,8 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
     border-bottom: 1px solid rgba(248, 152, 30, 0.3);
     position: relative;
     z-index: 1;
@@ -2248,10 +2252,11 @@ button {
 
 .service-description {
     color: rgba(255, 255, 255, 0.9);
-    line-height: 1.7;
-    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-xs);
     position: relative;
     z-index: 1;
+    flex-grow: 1;
 }
 
 .service-note {
@@ -2259,6 +2264,7 @@ button {
     font-size: 0.85rem;
     font-style: italic;
     margin-top: var(--spacing-xs);
+    margin-bottom: 0;
     position: relative;
     z-index: 1;
 }
@@ -2266,7 +2272,7 @@ button {
 .service-list {
     list-style: none;
     padding: 0;
-    margin: var(--spacing-sm) 0;
+    margin: var(--spacing-xs) 0 0 0;
     position: relative;
     z-index: 1;
 }
