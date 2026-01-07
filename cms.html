@@ -228,14 +228,26 @@
 
         .gallery-item-actions {
             display: flex;
-            gap: 0.3rem;
+            gap: 0.2rem;
             margin-top: var(--spacing-sm);
         }
 
         .gallery-item-actions .btn {
             flex: 1;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.7rem;
+            padding: 0.15rem 0.35rem;
+            font-size: 0.65rem;
+        }
+
+        .image-card-actions {
+            display: flex;
+            gap: 0.2rem;
+        }
+
+        .image-card-actions .btn {
+            padding: 0.15rem 0.3rem !important;
+            font-size: 0.6rem !important;
+            line-height: 1.2;
+            min-width: 0;
         }
 
         .gallery-item-checkbox {
@@ -467,6 +479,7 @@
                                 <span class="search-icon">🔍</span>
                             </div>
                             <select id="sort-select" class="sort-select">
+                                <option value="manual" selected>Manual Order</option>
                                 <option value="newest">Newest First</option>
                                 <option value="oldest">Oldest First</option>
                                 <option value="name-az">Name A-Z</option>

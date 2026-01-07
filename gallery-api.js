@@ -13,10 +13,22 @@ if (typeof API_ENDPOINTS === 'undefined') {
 }
 
 // Cache configuration
+let CACHE_VERSION = 'v2';  // Mutable version that can be incremented
 const CACHE_CONFIG = {
     KEY: 'gallery_cache',
-    VERSION: 'v2',  // Incremented to invalidate old cache format
+    get VERSION() { return CACHE_VERSION; },  // Dynamic version getter
     TTL: 15 * 60 * 1000  // 15 minutes
+};
+
+// Increment cache version to invalidate all cached data
+// This is called when images are reordered to force fresh data fetch
+window.invalidateGalleryCache = function() {
+    // Increment version to invalidate all cached data
+    const currentVersion = parseInt(CACHE_VERSION.replace('v', ''));
+    CACHE_VERSION = 'v' + (currentVersion + 1);
+    localStorage.removeItem(CACHE_CONFIG.KEY);
+    console.log('Gallery cache invalidated and version bumped to:', CACHE_VERSION);
+    console.log('Next gallery page load will fetch fresh data from API');
 };
 
 // Gallery state

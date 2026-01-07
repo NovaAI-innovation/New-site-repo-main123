@@ -15,7 +15,7 @@ const cmsState = {
     filesToUpload: [],
     draggedElement: null,
     searchQuery: '',
-    sortOrder: 'newest'
+    sortOrder: 'manual'  // Default to manual order to preserve backend ordering
 };
 
 // =====================
@@ -91,6 +91,11 @@ function showAuth() {
 function showDashboard() {
     elements.authSection.classList.add('hidden');
     elements.cmsDashboard.classList.remove('hidden');
+    
+    // Initialize sort dropdown to match current sort order
+    if (elements.sortSelect) {
+        elements.sortSelect.value = cmsState.sortOrder;
+    }
 }
 
 elements.authForm.addEventListener('submit', async (e) => {
@@ -283,6 +288,12 @@ elements.uploadBtn.addEventListener('click', async () => {
         });
 
         if (response.ok) {
+            // Clear gallery cache so new images appear immediately
+            if (typeof window.clearGalleryCache === 'function') {
+                window.clearGalleryCache();
+                console.log('Gallery cache cleared after upload');
+            }
+
             showSuccess(elements.uploadMessage, `Successfully uploaded ${cmsState.filesToUpload.length} image(s)!`);
             cmsState.filesToUpload = [];
             elements.captionInput.value = '';
@@ -320,6 +331,12 @@ async function loadGalleryImages() {
 
         if (response.ok) {
             cmsState.images = await response.json();
+            
+            // Sync sort dropdown with current sort order
+            if (elements.sortSelect) {
+                elements.sortSelect.value = cmsState.sortOrder;
+            }
+            
             updateStatistics();
             renderGallery();
         } else {
@@ -343,21 +360,23 @@ function renderGallery() {
         );
     }
 
-    // Apply sort
-    filteredImages.sort((a, b) => {
-        switch (cmsState.sortOrder) {
-            case 'newest':
-                return new Date(b.uploaded_at || 0) - new Date(a.uploaded_at || 0);
-            case 'oldest':
-                return new Date(a.uploaded_at || 0) - new Date(b.uploaded_at || 0);
-            case 'name-az':
-                return (a.caption || '').localeCompare(b.caption || '');
-            case 'name-za':
-                return (b.caption || '').localeCompare(a.caption || '');
-            default:
-                return 0;
-        }
-    });
+    // Apply sort (only if not 'manual' - manual preserves backend order)
+    if (cmsState.sortOrder !== 'manual') {
+        filteredImages.sort((a, b) => {
+            switch (cmsState.sortOrder) {
+                case 'newest':
+                    return new Date(b.uploaded_at || 0) - new Date(a.uploaded_at || 0);
+                case 'oldest':
+                    return new Date(a.uploaded_at || 0) - new Date(b.uploaded_at || 0);
+                case 'name-az':
+                    return (a.caption || '').localeCompare(b.caption || '');
+                case 'name-za':
+                    return (b.caption || '').localeCompare(a.caption || '');
+                default:
+                    return 0;
+            }
+        });
+    }
 
     elements.galleryCountBadge.textContent = filteredImages.length;
 
@@ -574,8 +593,33 @@ async function saveImageOrder() {
         if (response.ok) {
             const result = await response.json();
             console.log('Image order saved successfully:', result);
+            console.log('Ordered IDs sent to backend:', orderedIds);
 
-            // Optional: Show success message (subtle, not intrusive)
+            // Clear and invalidate gallery cache so changes appear immediately
+            // This ensures gallery page shows the new order on next visit/refresh
+            if (typeof window.clearGalleryCache === 'function') {
+                window.clearGalleryCache();
+                console.log('Gallery cache cleared after reordering');
+            }
+            
+            // Also invalidate cache version to force fresh fetch on all tabs/pages
+            if (typeof window.invalidateGalleryCache === 'function') {
+                window.invalidateGalleryCache();
+                console.log('Gallery cache version invalidated after reordering');
+            }
+            
+            console.log('Note: Gallery page will show new order after refresh/reload');
+
+            // Switch to manual order and reload to show the new order
+            cmsState.sortOrder = 'manual';
+            if (elements.sortSelect) {
+                elements.sortSelect.value = 'manual';
+            }
+            
+            // Reload images to reflect the new order from backend
+            loadGalleryImages();
+
+            // Show success message
             showSuccess(elements.galleryMessage, 'Image order saved');
         } else {
             const errorText = await response.text();
@@ -746,6 +790,12 @@ elements.deleteSelectedBtn.addEventListener('click', async () => {
         });
 
         if (response.ok) {
+            // Clear gallery cache so deleted images disappear immediately
+            if (typeof window.clearGalleryCache === 'function') {
+                window.clearGalleryCache();
+                console.log('Gallery cache cleared after bulk delete');
+            }
+
             showSuccess(elements.galleryMessage, `Deleted ${count} image(s)`);
             cmsState.selectedImages.clear();
             loadGalleryImages();
@@ -774,6 +824,12 @@ async function deleteImage(imageId) {
         });
 
         if (response.ok) {
+            // Clear gallery cache so deleted images disappear immediately
+            if (typeof window.clearGalleryCache === 'function') {
+                window.clearGalleryCache();
+                console.log('Gallery cache cleared after delete');
+            }
+
             showSuccess(elements.galleryMessage, 'Image deleted');
             cmsState.selectedImages.delete(imageId);
             loadGalleryImages();
@@ -841,6 +897,12 @@ async function saveCaptionUpdate() {
         });
 
         if (response.ok) {
+            // Clear gallery cache so caption updates appear immediately
+            if (typeof window.clearGalleryCache === 'function') {
+                window.clearGalleryCache();
+                console.log('Gallery cache cleared after caption update');
+            }
+
             showSuccess(elements.galleryMessage, 'Caption updated successfully');
             closeCaptionEditor();
             loadGalleryImages(); // Reload to show updated caption
