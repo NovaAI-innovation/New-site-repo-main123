@@ -4,6 +4,52 @@
  */
 
 // =====================
+// FETCH HELPER WITH CORS SUPPORT
+// =====================
+
+/**
+ * Helper function to make fetch requests with proper CORS configuration
+ * @param {string} url - The URL to fetch
+ * @param {Object} options - Fetch options (method, headers, body, etc.)
+ * @returns {Promise<Response>} - The fetch response
+ */
+async function fetchWithCORS(url, options = {}) {
+    // Ensure CORS mode is explicitly set (defaults to 'cors' but being explicit)
+    const fetchOptions = {
+        mode: 'cors',  // Explicitly set CORS mode
+        credentials: 'omit',  // Don't send credentials (matches backend allow_credentials=False)
+        ...options,
+    };
+    
+    // Don't override Content-Type if body is FormData (browser sets it automatically)
+    if (options.body instanceof FormData) {
+        // Remove Content-Type from headers if present - browser will set it with boundary
+        if (fetchOptions.headers) {
+            if (fetchOptions.headers instanceof Headers) {
+                fetchOptions.headers.delete('Content-Type');
+            } else if (typeof fetchOptions.headers === 'object') {
+                // Convert to Headers object to safely delete
+                const headers = new Headers(fetchOptions.headers);
+                headers.delete('Content-Type');
+                fetchOptions.headers = headers;
+            }
+        }
+    }
+    
+    try {
+        return await fetch(url, fetchOptions);
+    } catch (error) {
+        // Re-throw with more context
+        console.error('Fetch error:', {
+            url,
+            method: options.method || 'GET',
+            error: error.message
+        });
+        throw error;
+    }
+}
+
+// =====================
 // STATE MANAGEMENT
 // =====================
 
@@ -110,7 +156,7 @@ elements.authForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        const response = await fetch(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
+        const response = await fetchWithCORS(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
             method: 'GET',
             headers: {
                 'X-CMS-Password': password,
@@ -433,7 +479,7 @@ elements.uploadBtn.addEventListener('click', async () => {
     });
 
     try {
-        const response = await fetch(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
+        const response = await fetchWithCORS(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
             method: 'POST',
             headers: {
                 'X-CMS-Password': cmsState.password
@@ -479,7 +525,7 @@ async function loadGalleryImages() {
     elements.galleryGrid.innerHTML = '<div class="gallery-loading"><div class="loading-spinner"></div><p>Loading gallery images...</p></div>';
 
     try {
-        const response = await fetch(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
+        const response = await fetchWithCORS(API_ENDPOINTS.CMS_GALLERY_IMAGES, {
             method: 'GET',
             headers: {
                 'X-CMS-Password': cmsState.password,
@@ -736,7 +782,7 @@ async function saveImageOrder() {
         console.log('Password present:', !!cmsState.password);
 
         // Call reorder API endpoint
-        const response = await fetch(API_ENDPOINTS.CMS_REORDER_IMAGES, {
+        const response = await fetchWithCORS(API_ENDPOINTS.CMS_REORDER_IMAGES, {
             method: 'PUT',
             headers: {
                 'X-CMS-Password': cmsState.password,
@@ -1051,7 +1097,7 @@ elements.deleteSelectedBtn.addEventListener('click', async () => {
     if (!confirm(`Delete ${count} selected image(s)?`)) return;
 
     try {
-        const response = await fetch(API_ENDPOINTS.CMS_BULK_DELETE, {
+        const response = await fetchWithCORS(API_ENDPOINTS.CMS_BULK_DELETE, {
             method: 'DELETE',
             headers: {
                 'X-CMS-Password': cmsState.password,
@@ -1090,7 +1136,7 @@ async function deleteImage(imageId) {
     if (!confirm('Delete this image?')) return;
 
     try {
-        const response = await fetch(API_ENDPOINTS.CMS_GALLERY_IMAGE(imageId), {
+        const response = await fetchWithCORS(API_ENDPOINTS.CMS_GALLERY_IMAGE(imageId), {
             method: 'DELETE',
             headers: {
                 'X-CMS-Password': cmsState.password
@@ -1160,7 +1206,7 @@ async function saveCaptionUpdate() {
     const newCaption = captionInput.value.trim();
 
     try {
-        const response = await fetch(API_ENDPOINTS.CMS_GALLERY_IMAGE(currentEditingImageId), {
+        const response = await fetchWithCORS(API_ENDPOINTS.CMS_GALLERY_IMAGE(currentEditingImageId), {
             method: 'PUT',
             headers: {
                 'X-CMS-Password': cmsState.password,
