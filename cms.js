@@ -15,7 +15,9 @@ const cmsState = {
     filesToUpload: [],
     draggedElement: null,
     searchQuery: '',
-    sortOrder: 'manual'  // Default to manual order to preserve backend ordering
+    sortOrder: 'manual',  // Default to manual order to preserve backend ordering
+    scrollDirection: 0,   // Auto-scroll direction: -1 (up), 0 (none), 1 (down)
+    scrollSpeed: 10       // Auto-scroll speed in pixels per tick
 };
 
 // =====================
@@ -485,6 +487,9 @@ function createImageCard(image, index) {
 // =====================
 
 let dragOverElement = null;
+let autoScrollInterval = null;
+const AUTO_SCROLL_ZONE = 100; // Pixels from edge to trigger scroll
+const AUTO_SCROLL_SPEED = 15; // Pixels per scroll tick (increased by 1.5x)
 
 function handleDragStart(e) {
     cmsState.draggedElement = this;
@@ -492,11 +497,17 @@ function handleDragStart(e) {
     this.style.opacity = '0.4';
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/html', this.innerHTML);
+    
+    // Start auto-scroll monitoring
+    startAutoScroll();
 }
 
 function handleDragEnd(e) {
     this.classList.remove('dragging');
     this.style.opacity = '1';
+
+    // Stop auto-scrolling
+    stopAutoScroll();
 
     // Remove all drop indicators
     document.querySelectorAll('.cms-image-card').forEach(card => {
@@ -683,6 +694,9 @@ elements.galleryGrid.addEventListener('dragover', (e) => {
     const draggingElement = document.querySelector('.dragging');
     if (!draggingElement) return;
 
+    // Update auto-scroll based on cursor position
+    updateAutoScroll(e.clientY);
+
     // Find the closest element to cursor position
     const afterElement = getClosestElement(elements.galleryGrid, e.clientX, e.clientY);
 
@@ -695,6 +709,14 @@ elements.galleryGrid.addEventListener('dragover', (e) => {
         } else {
             elements.galleryGrid.insertBefore(draggingElement, afterElement.nextSibling);
         }
+    }
+});
+
+// Monitor drag events globally for auto-scrolling
+document.addEventListener('dragover', (e) => {
+    // Only handle if dragging a gallery image
+    if (document.querySelector('.cms-image-card.dragging')) {
+        updateAutoScroll(e.clientY);
     }
 });
 
@@ -722,6 +744,107 @@ function getClosestElement(container, x, y) {
     });
 
     return closest;
+}
+
+// =====================
+// AUTO-SCROLL DURING DRAG
+// =====================
+
+/**
+ * Start auto-scroll monitoring during drag
+ */
+function startAutoScroll() {
+    if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+    }
+    
+    // Initialize scroll direction
+    cmsState.scrollDirection = 0;
+    
+    // Start checking scroll conditions
+    autoScrollInterval = setInterval(() => {
+        if (cmsState.scrollDirection !== 0) {
+            performScroll(cmsState.scrollDirection);
+        }
+    }, 16); // ~60fps
+}
+
+/**
+ * Stop auto-scrolling
+ */
+function stopAutoScroll() {
+    if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+    }
+    cmsState.scrollDirection = 0;
+}
+
+/**
+ * Update auto-scroll direction based on cursor position
+ */
+function updateAutoScroll(clientY) {
+    if (!cmsState.draggedElement) {
+        cmsState.scrollDirection = 0;
+        return;
+    }
+
+    const viewportHeight = window.innerHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollBottom = scrollTop + viewportHeight;
+    
+    // Calculate distance from top and bottom edges
+    const distanceFromTop = clientY;
+    const distanceFromBottom = viewportHeight - clientY;
+    
+    // Determine scroll direction and speed based on proximity to edges
+    let scrollDirection = 0;
+    let scrollSpeed = AUTO_SCROLL_SPEED;
+    
+    if (distanceFromTop < AUTO_SCROLL_ZONE) {
+        // Near top edge - scroll up
+        const proximity = 1 - (distanceFromTop / AUTO_SCROLL_ZONE);
+        scrollDirection = -1;
+        scrollSpeed = AUTO_SCROLL_SPEED * (0.5 + proximity * 1.5); // Speed up closer to edge
+    } else if (distanceFromBottom < AUTO_SCROLL_ZONE) {
+        // Near bottom edge - scroll down
+        const proximity = 1 - (distanceFromBottom / AUTO_SCROLL_ZONE);
+        scrollDirection = 1;
+        scrollSpeed = AUTO_SCROLL_SPEED * (0.5 + proximity * 1.5); // Speed up closer to edge
+    }
+    
+    cmsState.scrollDirection = scrollDirection;
+    cmsState.scrollSpeed = scrollSpeed;
+}
+
+/**
+ * Perform the actual scrolling
+ */
+function performScroll(direction) {
+    if (!cmsState.draggedElement) return;
+    
+    const scrollAmount = (cmsState.scrollSpeed || AUTO_SCROLL_SPEED) * direction;
+    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    
+    // Only scroll if we're not at the limits
+    if ((direction < 0 && currentScroll > 0) || (direction > 0 && currentScroll < maxScroll)) {
+        // Use scrollBy for smooth continuous scrolling (handles boundaries automatically)
+        window.scrollBy(0, scrollAmount);
+        
+        // Also try scrolling the gallery container if it has its own scroll
+        const galleryContainer = elements.galleryGrid?.closest('.cms-gallery-grid') || 
+                                 elements.galleryGrid?.parentElement;
+        if (galleryContainer && galleryContainer.scrollHeight > galleryContainer.clientHeight) {
+            const containerScroll = galleryContainer.scrollTop;
+            const containerMaxScroll = galleryContainer.scrollHeight - galleryContainer.clientHeight;
+            
+            if ((direction < 0 && containerScroll > 0) || 
+                (direction > 0 && containerScroll < containerMaxScroll)) {
+                galleryContainer.scrollTop += scrollAmount;
+            }
+        }
+    }
 }
 
 // =====================

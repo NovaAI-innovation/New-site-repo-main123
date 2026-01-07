@@ -54,6 +54,7 @@ let galleryState = {
 
 /**
  * Get cached gallery data from localStorage
+ * Returns object with data and cache metadata, or null if no valid cache
  */
 function getCachedData() {
     try {
@@ -101,7 +102,11 @@ function getCachedData() {
         }
 
         console.log(`Using cached data (age: ${Math.round(age / 1000)}s)`);
-        return parsed.data;
+        return {
+            data: parsed.data,
+            timestamp: parsed.timestamp,
+            age: age
+        };
 
     } catch (error) {
         console.error('Error reading cache:', error);
@@ -205,6 +210,10 @@ function generateSrcset(originalUrl) {
 
 /**
  * Fetch gallery images from the API with pagination
+ * Returns object with { data, fromCache, cacheAge } where:
+ * - data: the gallery data
+ * - fromCache: boolean indicating if data came from cache
+ * - cacheAge: age of cache in milliseconds (if fromCache is true), or null
  */
 async function fetchGalleryImages(cursor = null, useCache = true) {
     try {
@@ -212,7 +221,11 @@ async function fetchGalleryImages(cursor = null, useCache = true) {
         if (!cursor && useCache) {
             const cached = getCachedData();
             if (cached) {
-                return cached;
+                return {
+                    data: cached.data,
+                    fromCache: true,
+                    cacheAge: cached.age
+                };
             }
         }
 
@@ -259,7 +272,11 @@ async function fetchGalleryImages(cursor = null, useCache = true) {
 
         console.log(`Fetched ${data.images.length} images (has_more: ${data.pagination.has_more})`);
 
-        return data;
+        return {
+            data: data,
+            fromCache: false,
+            cacheAge: null
+        };
 
     } catch (error) {
         console.error('Error fetching gallery images:', error);
@@ -378,28 +395,46 @@ async function renderGallery() {
 
     try {
         // Fetch first page (with cache)
-        const data = await fetchGalleryImages(null, true);
+        const result = await fetchGalleryImages(null, true);
 
-        if (!data || !data.images) {
+        if (!result || !result.data || !result.data.images) {
             galleryGrid.innerHTML = '<div class="gallery-error">Failed to load gallery.</div>';
             return;
         }
+
+        const data = result.data;
+        const fromCache = result.fromCache;
+        const cacheAge = result.cacheAge;
 
         // Update state - handle both cache and API response formats
         galleryState.allImages = data.images;
         galleryState.nextCursor = data.pagination ? data.pagination.next_cursor : data.nextCursor;
         galleryState.hasMore = data.pagination ? data.pagination.has_more : data.hasMore;
 
-        // Cache the initial data in API response format (only if no recent reorder)
-        // Note: setCachedData will check and prevent caching if reorder happened recently
-        setCachedData({
-            images: galleryState.allImages,
-            pagination: {
-                next_cursor: galleryState.nextCursor,
-                has_more: galleryState.hasMore,
-                total_count: data.pagination ? data.pagination.total_count : galleryState.allImages.length
+        // Only recache if:
+        // 1. Data came from API (not cache), OR
+        // 2. Cache is older than 16 minutes (needs refresh)
+        const shouldRecache = !fromCache || (cacheAge !== null && cacheAge > 16 * 60 * 1000);
+        
+        if (shouldRecache) {
+            if (fromCache) {
+                console.log(`Cache is ${Math.round(cacheAge / 1000 / 60)} minutes old, refreshing cache`);
+            } else {
+                console.log('Data fetched from API, caching fresh data');
             }
-        });
+            // Cache the initial data in API response format (only if no recent reorder)
+            // Note: setCachedData will check and prevent caching if reorder happened recently
+            setCachedData({
+                images: galleryState.allImages,
+                pagination: {
+                    next_cursor: galleryState.nextCursor,
+                    has_more: galleryState.hasMore,
+                    total_count: data.pagination ? data.pagination.total_count : galleryState.allImages.length
+                }
+            });
+        } else {
+            console.log(`Skipping recache - using fresh cached data (age: ${Math.round(cacheAge / 1000)}s)`);
+        }
 
         if (galleryState.allImages.length === 0) {
             galleryGrid.innerHTML = '<div class="gallery-empty">No images available at this time.</div>';
@@ -479,19 +514,21 @@ async function loadMoreImages() {
         button.textContent = 'Loading...';
         button.disabled = true;
 
-        // Fetch next page
-        const data = await fetchGalleryImages(galleryState.nextCursor, false);
+        // Fetch next page (always from API, not cache)
+        const result = await fetchGalleryImages(galleryState.nextCursor, false);
 
-        if (!data || !data.images) {
+        if (!result || !result.data || !result.data.images) {
             throw new Error('Failed to load more images');
         }
+
+        const data = result.data;
 
         // Append new images to state
         galleryState.allImages = [...galleryState.allImages, ...data.images];
         galleryState.nextCursor = data.pagination.next_cursor;
         galleryState.hasMore = data.pagination.has_more;
 
-        // Update cache with all images in API response format
+        // Always update cache when loading more images (new data from API)
         setCachedData({
             images: galleryState.allImages,
             pagination: {
