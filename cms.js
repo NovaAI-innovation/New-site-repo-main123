@@ -425,6 +425,14 @@ function createImageCard(image, index) {
     const actions = document.createElement('div');
     actions.className = 'image-card-actions';
 
+    const editCaptionBtn = document.createElement('button');
+    editCaptionBtn.className = 'btn btn-secondary btn-small';
+    editCaptionBtn.innerHTML = '<span>✏️</span> Edit Caption';
+    editCaptionBtn.onclick = (e) => {
+        e.stopPropagation();
+        openCaptionEditor(image.id, image.caption, image.cloudinary_url);
+    };
+
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn btn-danger btn-small';
     deleteBtn.innerHTML = '<span>🗑️</span> Delete';
@@ -433,6 +441,7 @@ function createImageCard(image, index) {
         deleteImage(image.id);
     };
 
+    actions.appendChild(editCaptionBtn);
     actions.appendChild(deleteBtn);
     info.appendChild(name);
     info.appendChild(meta);
@@ -776,6 +785,106 @@ async function deleteImage(imageId) {
         showError(elements.galleryMessage, 'Failed to delete image');
     }
 }
+
+// =====================
+// CAPTION EDITING
+// =====================
+
+let currentEditingImageId = null;
+
+function openCaptionEditor(imageId, currentCaption, imageUrl) {
+    const modal = document.getElementById('caption-edit-modal');
+    const previewImg = document.getElementById('caption-edit-preview-img');
+    const captionInput = document.getElementById('caption-edit-input');
+
+    if (modal && previewImg && captionInput) {
+        currentEditingImageId = imageId;
+        previewImg.src = imageUrl;
+        captionInput.value = currentCaption || '';
+        modal.classList.remove('hidden');
+        captionInput.focus();
+    }
+}
+
+function closeCaptionEditor() {
+    const modal = document.getElementById('caption-edit-modal');
+    const captionInput = document.getElementById('caption-edit-input');
+
+    if (modal) {
+        modal.classList.add('hidden');
+        currentEditingImageId = null;
+        if (captionInput) {
+            captionInput.value = '';
+        }
+    }
+}
+
+async function saveCaptionUpdate() {
+    const captionInput = document.getElementById('caption-edit-input');
+
+    if (!currentEditingImageId || !captionInput) {
+        return;
+    }
+
+    const newCaption = captionInput.value.trim();
+
+    try {
+        const response = await fetch(API_ENDPOINTS.CMS_GALLERY_IMAGE(currentEditingImageId), {
+            method: 'PUT',
+            headers: {
+                'X-CMS-Password': cmsState.password,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                caption: newCaption || null
+            })
+        });
+
+        if (response.ok) {
+            showSuccess(elements.galleryMessage, 'Caption updated successfully');
+            closeCaptionEditor();
+            loadGalleryImages(); // Reload to show updated caption
+        } else {
+            const error = await response.json();
+            showError(elements.galleryMessage, error.detail?.error || 'Failed to update caption');
+        }
+    } catch (error) {
+        console.error('Caption update error:', error);
+        showError(elements.galleryMessage, 'Error updating caption');
+    }
+}
+
+// Caption modal event listeners
+const captionSaveBtn = document.getElementById('caption-save-btn');
+const captionCancelBtn = document.getElementById('caption-cancel-btn');
+const captionModal = document.getElementById('caption-edit-modal');
+
+if (captionSaveBtn) {
+    captionSaveBtn.addEventListener('click', saveCaptionUpdate);
+}
+
+if (captionCancelBtn) {
+    captionCancelBtn.addEventListener('click', closeCaptionEditor);
+}
+
+// Close modal on overlay click
+if (captionModal) {
+    captionModal.addEventListener('click', (e) => {
+        if (e.target === captionModal || e.target.classList.contains('modal-overlay')) {
+            closeCaptionEditor();
+        }
+    });
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('caption-edit-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closeCaptionEditor();
+        }
+    }
+});
 
 // =====================
 // SEARCH & SORT

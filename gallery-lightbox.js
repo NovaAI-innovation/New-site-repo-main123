@@ -25,18 +25,18 @@ function initializeLightbox() {
     // Navigate to previous image
     function showPreviousImage() {
         const currentIndex = parseInt(lightbox.dataset.currentIndex || '0');
-        if (typeof galleryImages !== 'undefined' && galleryImages.length > 0) {
-            const prevIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
-            openLightbox(galleryImages[prevIndex].cloudinary_url, prevIndex);
+        if (typeof galleryState !== 'undefined' && galleryState.allImages.length > 0) {
+            const prevIndex = (currentIndex - 1 + galleryState.allImages.length) % galleryState.allImages.length;
+            openLightbox(galleryState.allImages[prevIndex].cloudinary_url, prevIndex);
         }
     }
 
     // Navigate to next image
     function showNextImage() {
         const currentIndex = parseInt(lightbox.dataset.currentIndex || '0');
-        if (typeof galleryImages !== 'undefined' && galleryImages.length > 0) {
-            const nextIndex = (currentIndex + 1) % galleryImages.length;
-            openLightbox(galleryImages[nextIndex].cloudinary_url, nextIndex);
+        if (typeof galleryState !== 'undefined' && galleryState.allImages.length > 0) {
+            const nextIndex = (currentIndex + 1) % galleryState.allImages.length;
+            openLightbox(galleryState.allImages[nextIndex].cloudinary_url, nextIndex);
         }
     }
 

@@ -228,14 +228,14 @@
 
         .gallery-item-actions {
             display: flex;
-            gap: var(--spacing-xs);
+            gap: 0.3rem;
             margin-top: var(--spacing-sm);
         }
 
         .gallery-item-actions .btn {
             flex: 1;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
         }
 
         .gallery-item-checkbox {
@@ -510,6 +510,25 @@
                         <p>Upload your first images to get started</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Caption Edit Modal -->
+    <div id="caption-edit-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h3>Edit Image Caption</h3>
+            <div class="caption-edit-preview">
+                <img id="caption-edit-preview-img" src="" alt="Image preview">
+            </div>
+            <div class="form-group">
+                <label for="caption-edit-input">Caption</label>
+                <textarea id="caption-edit-input" placeholder="Enter caption for this image..." rows="3"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button id="caption-save-btn" class="btn btn-primary">Save Caption</button>
+                <button id="caption-cancel-btn" class="btn btn-secondary">Cancel</button>
             </div>
         </div>
     </div>

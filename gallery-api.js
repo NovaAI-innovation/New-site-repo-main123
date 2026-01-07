@@ -12,16 +12,148 @@ if (typeof API_ENDPOINTS === 'undefined') {
     console.error('API_ENDPOINTS is not defined! Make sure api-config.js is loaded before gallery-api.js');
 }
 
-/**
- * Fetch gallery images from the API
- */
-async function fetchGalleryImages() {
-    try {
-        const endpoint = API_ENDPOINTS.GALLERY_IMAGES;
-        console.log('Fetching gallery images from:', endpoint);
-        console.log('API_BASE_URL:', API_BASE_URL);
+// Cache configuration
+const CACHE_CONFIG = {
+    KEY: 'gallery_cache',
+    VERSION: 'v2',  // Incremented to invalidate old cache format
+    TTL: 15 * 60 * 1000  // 15 minutes
+};
 
-        const response = await fetch(endpoint, {
+// Gallery state
+let galleryState = {
+    allImages: [],
+    nextCursor: null,
+    hasMore: true,
+    isLoading: false
+};
+
+/**
+ * Get cached gallery data from localStorage
+ */
+function getCachedData() {
+    try {
+        const cached = localStorage.getItem(CACHE_CONFIG.KEY);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+
+        // Check version
+        if (parsed.version !== CACHE_CONFIG.VERSION) {
+            console.log('Cache version mismatch, invalidating');
+            localStorage.removeItem(CACHE_CONFIG.KEY);
+            return null;
+        }
+
+        // Check TTL
+        const age = Date.now() - parsed.timestamp;
+        if (age > CACHE_CONFIG.TTL) {
+            console.log('Cache expired, invalidating');
+            localStorage.removeItem(CACHE_CONFIG.KEY);
+            return null;
+        }
+
+        console.log(`Using cached data (age: ${Math.round(age / 1000)}s)`);
+        return parsed.data;
+
+    } catch (error) {
+        console.error('Error reading cache:', error);
+        localStorage.removeItem(CACHE_CONFIG.KEY);
+        return null;
+    }
+}
+
+/**
+ * Save gallery data to localStorage cache
+ */
+function setCachedData(data) {
+    try {
+        const cacheObject = {
+            data: data,
+            timestamp: Date.now(),
+            version: CACHE_CONFIG.VERSION
+        };
+        localStorage.setItem(CACHE_CONFIG.KEY, JSON.stringify(cacheObject));
+        console.log('Saved data to cache');
+    } catch (error) {
+        console.error('Error saving to cache:', error);
+        // Cache failure shouldn't break the app
+    }
+}
+
+/**
+ * Clear gallery cache (useful for CMS updates)
+ */
+window.clearGalleryCache = function() {
+    localStorage.removeItem(CACHE_CONFIG.KEY);
+    console.log('Gallery cache cleared');
+};
+
+/**
+ * Cloudinary transformation configurations
+ */
+const CLOUDINARY_TRANSFORMS = {
+    thumbnail: 'c_fill,w_400,h_400,q_auto,f_auto',
+    medium: 'c_fill,w_800,h_800,q_auto,f_auto',
+    full: 'c_fill,w_1600,h_1600,q_auto,f_auto'
+};
+
+/**
+ * Generate optimized Cloudinary URL with transformations
+ *
+ * @param {string} originalUrl - Original Cloudinary URL
+ * @param {string} size - Size preset (thumbnail, medium, full)
+ * @returns {string} Transformed URL
+ */
+function generateCloudinaryUrl(originalUrl, size = 'thumbnail') {
+    if (!originalUrl) return '';
+
+    // Cloudinary URL pattern: https://res.cloudinary.com/{cloud}/image/upload/{public_id}
+    const uploadPattern = /\/upload\//;
+
+    if (!uploadPattern.test(originalUrl)) {
+        console.warn('Not a Cloudinary URL, returning original:', originalUrl);
+        return originalUrl;
+    }
+
+    const transformation = CLOUDINARY_TRANSFORMS[size] || CLOUDINARY_TRANSFORMS.thumbnail;
+
+    // Insert transformations after /upload/
+    return originalUrl.replace('/upload/', `/upload/${transformation}/`);
+}
+
+/**
+ * Generate srcset for responsive images
+ *
+ * @param {string} originalUrl - Original Cloudinary URL
+ * @returns {string} srcset attribute value
+ */
+function generateSrcset(originalUrl) {
+    return `${generateCloudinaryUrl(originalUrl, 'thumbnail')} 400w, ${generateCloudinaryUrl(originalUrl, 'medium')} 800w`;
+}
+
+/**
+ * Fetch gallery images from the API with pagination
+ */
+async function fetchGalleryImages(cursor = null, useCache = true) {
+    try {
+        // Try cache on initial load (no cursor)
+        if (!cursor && useCache) {
+            const cached = getCachedData();
+            if (cached) {
+                return cached;
+            }
+        }
+
+        // Build API URL with pagination params
+        const url = new URL(API_ENDPOINTS.GALLERY_IMAGES);
+        url.searchParams.set('limit', '12');
+        if (cursor) {
+            url.searchParams.set('cursor', cursor);
+        }
+
+        console.log('Fetching gallery images from:', url.toString());
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -34,17 +166,33 @@ async function fetchGalleryImages() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const images = await response.json();
-        console.log(`Successfully fetched ${images.length} gallery images`);
-        return images;
+        const data = await response.json();
+        console.log('Raw API response:', data);
+
+        // Validate response structure
+        if (!data || typeof data !== 'object') {
+            console.error('Invalid API response: data is not an object', data);
+            throw new Error('Invalid API response format');
+        }
+
+        if (!data.images || !Array.isArray(data.images)) {
+            console.error('Invalid API response: missing or invalid images array', data);
+            throw new Error('API response missing images array');
+        }
+
+        if (!data.pagination || typeof data.pagination !== 'object') {
+            console.error('Invalid API response: missing or invalid pagination', data);
+            throw new Error('API response missing pagination metadata');
+        }
+
+        console.log(`Fetched ${data.images.length} images (has_more: ${data.pagination.has_more})`);
+
+        return data;
+
     } catch (error) {
         console.error('Error fetching gallery images:', error);
         console.error('API endpoint:', API_ENDPOINTS?.GALLERY_IMAGES || 'Not defined');
-        console.error('API_BASE_URL:', API_BASE_URL || 'Not defined');
-        console.error('Make sure the backend API is running and accessible');
-        console.error('Full error details:', error.message, error.stack);
-        // Return empty array on error to prevent breaking the page
-        return [];
+        throw error;
     }
 }
 
@@ -60,9 +208,13 @@ function createGalleryItem(image, index) {
     const imageWrapper = document.createElement('div');
     imageWrapper.className = 'gallery-item-image';
 
-    // Create image element
+    // Create optimized image element with responsive images
     const img = document.createElement('img');
-    img.src = image.cloudinary_url;
+
+    // Use thumbnail as primary src, with srcset for responsiveness
+    img.src = generateCloudinaryUrl(image.cloudinary_url, 'thumbnail');
+    img.srcset = generateSrcset(image.cloudinary_url);
+    img.sizes = '(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw';
     img.alt = image.caption || `Makayla Moon Gallery ${index + 1}`;
     img.loading = 'lazy';
 
@@ -76,7 +228,7 @@ function createGalleryItem(image, index) {
         imageWrapper.appendChild(errorMsg);
     };
 
-    // Add click handler for lightbox
+    // Add click handler for lightbox (pass original URL for full-size)
     img.addEventListener('click', () => {
         openLightbox(image.cloudinary_url, index);
     });
@@ -105,33 +257,45 @@ function createGalleryItem(image, index) {
     return item;
 }
 
-// Store images globally for lightbox navigation
-let galleryImages = [];
-
 /**
  * Open lightbox with image (global function)
  */
 window.openLightbox = function(imageUrl, imageIndex) {
     const lightbox = document.getElementById('lightbox');
     const lightboxImage = document.getElementById('lightbox-image');
-    
+    const lightboxCaption = document.getElementById('lightbox-caption');
+
     if (lightbox && lightboxImage) {
-        lightboxImage.src = imageUrl;
-        lightboxImage.alt = galleryImages[imageIndex]?.caption || `Gallery image ${imageIndex + 1}`;
+        // Use full-size transformation for lightbox
+        const fullSizeUrl = generateCloudinaryUrl(imageUrl, 'full');
+
+        lightboxImage.src = fullSizeUrl;
+        lightboxImage.alt = galleryState.allImages[imageIndex]?.caption || `Gallery image ${imageIndex + 1}`;
+
+        // Show caption if available
+        if (lightboxCaption) {
+            if (galleryState.allImages[imageIndex]?.caption) {
+                lightboxCaption.textContent = galleryState.allImages[imageIndex].caption;
+                lightboxCaption.style.display = 'block';
+            } else {
+                lightboxCaption.style.display = 'none';
+            }
+        }
+
         lightbox.classList.add('active');
         lightbox.dataset.currentIndex = imageIndex;
-        
+
         // Prevent body scroll when lightbox is open
         document.body.style.overflow = 'hidden';
     }
 };
 
 /**
- * Render gallery images dynamically in grid layout
+ * Render initial gallery images
  */
 async function renderGallery() {
     const galleryGrid = document.getElementById('gallery-grid');
-    
+
     if (!galleryGrid) {
         console.error('Gallery grid container not found');
         return;
@@ -141,31 +305,151 @@ async function renderGallery() {
     galleryGrid.innerHTML = '<div class="gallery-loading">Loading gallery...</div>';
 
     try {
-        // Fetch images from API
-        const images = await fetchGalleryImages();
-        galleryImages = images; // Store for lightbox navigation
+        // Fetch first page (with cache)
+        const data = await fetchGalleryImages(null, true);
 
-        if (images.length === 0) {
+        if (!data || !data.images) {
+            galleryGrid.innerHTML = '<div class="gallery-error">Failed to load gallery.</div>';
+            return;
+        }
+
+        // Update state - handle both cache and API response formats
+        galleryState.allImages = data.images;
+        galleryState.nextCursor = data.pagination ? data.pagination.next_cursor : data.nextCursor;
+        galleryState.hasMore = data.pagination ? data.pagination.has_more : data.hasMore;
+
+        // Cache the initial data in API response format
+        setCachedData({
+            images: galleryState.allImages,
+            pagination: {
+                next_cursor: galleryState.nextCursor,
+                has_more: galleryState.hasMore,
+                total_count: data.pagination ? data.pagination.total_count : galleryState.allImages.length
+            }
+        });
+
+        if (galleryState.allImages.length === 0) {
             galleryGrid.innerHTML = '<div class="gallery-empty">No images available at this time.</div>';
             return;
         }
 
-        // Clear loading state
-        galleryGrid.innerHTML = '';
+        // Render images
+        renderImages();
 
-        // Create and append grid items
-        images.forEach((image, index) => {
-            const item = createGalleryItem(image, index);
-            galleryGrid.appendChild(item);
-        });
+        // Add "Load More" button if there are more images
+        if (galleryState.hasMore) {
+            addLoadMoreButton();
+        }
 
-        console.log(`Successfully rendered ${images.length} images in grid layout`);
+        console.log(`Successfully rendered ${galleryState.allImages.length} images`);
 
     } catch (error) {
         console.error('Error rendering gallery:', error);
         galleryGrid.innerHTML = '<div class="gallery-error">Failed to load gallery. Please try again later.</div>';
     }
 }
+
+/**
+ * Render images in the grid
+ */
+function renderImages() {
+    const galleryGrid = document.getElementById('gallery-grid');
+
+    // Clear grid completely (including load more button)
+    galleryGrid.innerHTML = '';
+
+    // Create and append grid items
+    galleryState.allImages.forEach((image, index) => {
+        const item = createGalleryItem(image, index);
+        galleryGrid.appendChild(item);
+    });
+}
+
+/**
+ * Add "Load More" button to gallery
+ */
+function addLoadMoreButton() {
+    const galleryGrid = document.getElementById('gallery-grid');
+
+    // Remove existing button if present
+    const existing = galleryGrid.querySelector('.load-more-container');
+    if (existing) {
+        existing.remove();
+    }
+
+    // Create load more container
+    const container = document.createElement('div');
+    container.className = 'load-more-container';
+
+    const button = document.createElement('button');
+    button.className = 'btn btn-primary load-more-btn';
+    button.textContent = 'Load More';
+    button.onclick = loadMoreImages;
+
+    container.appendChild(button);
+    galleryGrid.appendChild(container);
+}
+
+/**
+ * Load more images (pagination)
+ */
+async function loadMoreImages() {
+    if (galleryState.isLoading || !galleryState.hasMore) {
+        return;
+    }
+
+    const button = document.querySelector('.load-more-btn');
+    if (!button) return;
+
+    try {
+        galleryState.isLoading = true;
+        button.textContent = 'Loading...';
+        button.disabled = true;
+
+        // Fetch next page
+        const data = await fetchGalleryImages(galleryState.nextCursor, false);
+
+        if (!data || !data.images) {
+            throw new Error('Failed to load more images');
+        }
+
+        // Append new images to state
+        galleryState.allImages = [...galleryState.allImages, ...data.images];
+        galleryState.nextCursor = data.pagination.next_cursor;
+        galleryState.hasMore = data.pagination.has_more;
+
+        // Update cache with all images in API response format
+        setCachedData({
+            images: galleryState.allImages,
+            pagination: {
+                next_cursor: galleryState.nextCursor,
+                has_more: galleryState.hasMore,
+                total_count: data.pagination.total_count
+            }
+        });
+
+        // Re-render images
+        renderImages();
+
+        // Update or remove button
+        if (galleryState.hasMore) {
+            addLoadMoreButton();
+        }
+
+        console.log(`Loaded ${data.images.length} more images (total: ${galleryState.allImages.length})`);
+
+    } catch (error) {
+        console.error('Error loading more images:', error);
+        button.textContent = 'Load More';
+        button.disabled = false;
+        alert('Failed to load more images. Please try again.');
+    } finally {
+        galleryState.isLoading = false;
+    }
+}
+
+// Make loadMoreImages available globally for debugging
+window.loadMoreImages = loadMoreImages;
 
 // Initialize gallery when DOM is ready
 if (document.readyState === 'loading') {
