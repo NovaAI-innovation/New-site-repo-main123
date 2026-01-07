@@ -595,20 +595,22 @@ async function saveImageOrder() {
             console.log('Image order saved successfully:', result);
             console.log('Ordered IDs sent to backend:', orderedIds);
 
-            // Clear and invalidate gallery cache so changes appear immediately
-            // This ensures gallery page shows the new order on next visit/refresh
+            // IMPORTANT: Invalidate cache FIRST (sets timestamp BEFORE clearing)
+            // This ensures cache writes are blocked even if page loads quickly
+            if (typeof window.invalidateGalleryCache === 'function') {
+                window.invalidateGalleryCache();
+                console.log('Gallery cache version invalidated after reordering');
+                console.log('Cache writes blocked for 60 seconds to prevent stale data');
+            }
+            
+            // Also clear existing cache
             if (typeof window.clearGalleryCache === 'function') {
                 window.clearGalleryCache();
                 console.log('Gallery cache cleared after reordering');
             }
             
-            // Also invalidate cache version to force fresh fetch on all tabs/pages
-            if (typeof window.invalidateGalleryCache === 'function') {
-                window.invalidateGalleryCache();
-                console.log('Gallery cache version invalidated after reordering');
-            }
-            
             console.log('Note: Gallery page will show new order after refresh/reload');
+            console.log('Note: Cache writes are temporarily disabled to ensure fresh data');
 
             // Switch to manual order and reload to show the new order
             cmsState.sortOrder = 'manual';
